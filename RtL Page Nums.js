@@ -44,3 +44,5 @@ for (var i = 0; i < bookSize; i++) {
         appliedObjectStyle: objectStyle
     });
 }
+
+doc.activeLayer.locked = true;
