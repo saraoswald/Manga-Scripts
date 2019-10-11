@@ -1,1 +1,118 @@
-﻿var doc = app.activeDocument;var bookSize = doc.pages.count(); // num of pages in .indd// You need to select which way your files are named, and comment out whichever one doesn't apply// for files that look like /108.tifvar regex = new RegExp("(?=.+)[0-9][0-9][0-9](?=\.tif)"); // to match the file namevar numRegex = new RegExp("[0-9][0-9][0-9](?=\.tif)"); // to get *just* the page number from the tif// for  files that look like /P108.TIF// var regex = new RegExp("(?=.+)[0-9][0-9][0-9](.TIF|G.TIF)"); // to match the file name// var numRegex = new RegExp("[0-9][0-9][0-9](?=\.TIF|G\.TIF)"); // to get *just* the page number from the tifvar pageNum, pageLink, i;var imagesLayer = doc.activeLayer.allGraphics;var textFrames = doc.textFrames;// scale images on all pages in the book//      param (float) scaleFactor - decimal of desired scale factor//// Example usage: //      scalePages(110); // scales all images to 110%var scalePages = function(scaleFactor){    for (i=0;i < bookSize; i++){        try{          pageLink = imagesLayer[i].itemLink.filePath;          if(regex.exec(pageLink)){            // get page number            pageNum = parseInt(numRegex.exec(pageLink), 10);                        // rescale images            imagesLayer[i].absoluteHorizontalScale = scaleFactor;            imagesLayer[i].absoluteVerticalScale = scaleFactor;            $.write("scaled page #" + pageNum + "\n");          }        } catch(e){          return 0;        }    };};// shift even- or odd-numbered images the desired number of points//      param (string) side - set of page numbers, can be either 'even' or 'odd'//      param (float) amt - number of points to shift each image//// Example usage: //    shift('even', 0.4); // shifts all even-numbered pages to the right 0.4 points//    shift('odd', -1.2); // shifts all odd-numbered pages to the left 1.2 pointsvar shift = function(side, amt){    if((side == "odd" || side == "even") && parseFloat(amt)){      try{        for (i=0;i < bookSize; i++){          pageLink = imagesLayer[i].itemLink.filePath;          if(regex.exec(pageLink) ){            pageNum = parseInt(numRegex.exec(pageLink), 10);            if(side == "odd" && pageNum && pageNum % 2 > 0){              imagesLayer[i].move(undefined,[amt,0]);              $.write("shifted page #" + pageNum + "\n");            } else if (side == "even" && pageNum && pageNum % 2 == 0){              imagesLayer[i].move(undefined,[amt,0]);              $.write("shifted page #" + pageNum + "\n");            }          }        }      } catch(e){};    } else{        $.write("Incorrect params! Here's an example: \n\t shift(\"left\", 0.8)\n");    }     };
+﻿var doc = app.activeDocument;
+var bookSize = doc.pages.count(); // num of pages in .indd
+
+var imagesLayer = doc.activeLayer.allGraphics;
+
+main();
+
+function main() {
+    //Make certain that user interaction (display of dialogs, etc.) is turned on.
+    app.scriptPreferences.userInteractionLevel = UserInteractionLevels.interactWithAll;
+    if (imagesLayer.length === 0) {
+        alert('Please select the layer with all of your linked images and try again');
+    } else if (app.documents.length != 0) {
+        myDisplayDialog();
+    }
+};
+
+function myDisplayDialog() {
+    myDialog = app.dialogs.add({ name: "Layout Pages" });
+    var supportedFileTypes = ["TIFF", "PSD"];
+    var regexs = ["[0-9][0-9]?[0-9]?(?=\.(tif|tiff|TIFF|TIF))", "[0-9][0-9]?[0-9]?(?=\.(psd|PSD))"];
+    var fileTypeDropdown;
+    var oddPages = {};
+    var evenPages = {};
+    with(myDialog) {
+        with(dialogColumns.add()) {
+            oddPages.enabledCheckbox = enablingGroups.add({ staticLabel: "Odd Pages", checkedState: true });
+            with(oddPages.enabledCheckbox) {
+                with(dialogColumns.add()) {
+                    oddPages.scaleCheckbox = checkboxControls.add({ checkedState: false, staticLabel: "Scale:" });
+                    staticTexts.add({ staticLabel: "Shift Right:" });
+                    staticTexts.add({ staticLabel: "Shift Down:" });
+                }
+                with(dialogColumns.add()) {
+                    oddPages.scaleFactor = percentEditboxes.add({ editValue: 100 });
+                    oddPages.shiftRight = measurementEditboxes.add({ editValue: 0 });
+                    oddPages.shiftDown = measurementEditboxes.add({ editValue: 0 });
+                }
+            }
+
+            with(borderPanels.add()) {
+                staticTexts.add({ staticLabel: "File Type:" });
+                with(dialogColumns.add()) {
+                    fileTypeDropdown = dropdowns.add({ stringList: supportedFileTypes, selectedIndex: 0 });
+                }
+            }
+        }
+        with(dialogColumns.add()) {
+            evenPages.enabledCheckbox = enablingGroups.add({ staticLabel: "Even Pages", checkedState: true });
+            with(evenPages.enabledCheckbox) {
+                with(dialogColumns.add()) {
+                    evenPages.scaleCheckbox = checkboxControls.add({ checkedState: false, staticLabel: "Scale:" });
+                    staticTexts.add({ staticLabel: "Shift Right:" });
+                    staticTexts.add({ staticLabel: "Shift Down:" });
+                }
+                with(dialogColumns.add()) {
+                    evenPages.scaleFactor = percentEditboxes.add({ editValue: 100 });
+                    evenPages.shiftRight = measurementEditboxes.add({ editValue: 0 });
+                    evenPages.shiftDown = measurementEditboxes.add({ editValue: 0 });
+                }
+            }
+        }
+    }
+    var myReturn = myDialog.show();
+    if (myReturn == true) {
+        var regex = new RegExp(regexs[fileTypeDropdown && fileTypeDropdown.selectedIndex || 0]);
+        if (oddPages.enabledCheckbox.checkedState) {
+            if (oddPages.scaleCheckbox.checkedState) {
+                scalePages("odd", oddPages.scaleFactor.editValue, regex);
+            }
+            shiftPages("odd", oddPages.shiftRight.editValue, oddPages.shiftDown.editValue, regex);
+        }
+        if (evenPages.enabledCheckbox.checkedState) {
+            if (evenPages.scaleCheckbox.checkedState) {
+                scalePages("even", evenPages.scaleFactor.editValue, regex);
+            }
+            shiftPages("even", evenPages.shiftRight.editValue, evenPages.shiftDown.editValue, regex);
+        }
+
+        myDialog.destroy();
+    } else {
+        myDialog.destroy();
+    }
+}
+
+function scalePages(side, scaleFactor, regex) {
+    for (var i = 0; i < bookSize; i++) {
+        try {
+            var path = imagesLayer[i].itemLink.filePath || '';
+            var pageNum = parseInt(regex.exec(path), 10);
+            if (pageNum && (side == "odd" && pageNum % 2 > 0) || (side == "even" && pageNum % 2 == 0)) {
+                // rescale images
+                imagesLayer[i].absoluteHorizontalScale = parseInt(scaleFactor);
+                imagesLayer[i].absoluteVerticalScale = parseInt(scaleFactor);
+                $.write("scaled page #" + pageNum + "\n");
+            }
+        } catch (e) {
+            $.write(e);
+        }
+    };
+};
+
+function shiftPages(side, right, down, regex) {
+    if (right === 0 && down === 0) return;
+    var pageNum, pageLink, i;
+    try {
+        for (i = 0; i < bookSize; i++) {
+            var path = imagesLayer[i].itemLink.filePath || '';
+            var pageNum = parseInt(regex.exec(path), 10);
+            if (pageNum && (side == "odd" && pageNum % 2 > 0) || (side == "even" && pageNum % 2 == 0)) {
+                imagesLayer[i].move(undefined, [right, down]);
+                $.write("shifted page #" + pageNum + "\n");
+            }
+        }
+    } catch (e) {
+        $.write(e);
+    };
+};
