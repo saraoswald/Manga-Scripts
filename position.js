@@ -1,6 +1,24 @@
-﻿var doc = app.activeDocument;
-var bookSize = doc.pages.count(); // num of pages in .indd
+﻿// Feel free to change the default values
+var defaults = {
+    oddPages: {
+        enabled: true,
+        scale: false,
+        scaleFactor: 100,
+        shiftRight: 0,
+        shiftDown: 0
+    },
+    evenPages: {
+        enabled: true,
+        scale: false,
+        scaleFactor: 100,
+        shiftRight: 0,
+        shiftDown: 0
+    },
+    fileType: 0
+};
 
+var doc = app.activeDocument;
+var bookSize = doc.pages.count(); // num of pages in .indd
 var imagesLayer = doc.activeLayer.allGraphics;
 
 main();
@@ -24,39 +42,39 @@ function myDisplayDialog() {
     var evenPages = {};
     with(myDialog) {
         with(dialogColumns.add()) {
-            oddPages.enabledCheckbox = enablingGroups.add({ staticLabel: "Odd Pages", checkedState: true });
+            oddPages.enabledCheckbox = enablingGroups.add({ staticLabel: "Odd Pages", checkedState: defaults.oddPages.enabled });
             with(oddPages.enabledCheckbox) {
                 with(dialogColumns.add()) {
-                    oddPages.scaleCheckbox = checkboxControls.add({ checkedState: false, staticLabel: "Scale:" });
+                    oddPages.scaleCheckbox = checkboxControls.add({ checkedState: defaults.oddPages.scale, staticLabel: "Scale:" });
                     staticTexts.add({ staticLabel: "Shift Right:" });
                     staticTexts.add({ staticLabel: "Shift Down:" });
                 }
                 with(dialogColumns.add()) {
-                    oddPages.scaleFactor = percentEditboxes.add({ editValue: 100 });
-                    oddPages.shiftRight = measurementEditboxes.add({ editValue: 0 });
-                    oddPages.shiftDown = measurementEditboxes.add({ editValue: 0 });
+                    oddPages.scaleFactor = percentEditboxes.add({ editValue: defaults.oddPages.scaleFactor });
+                    oddPages.shiftRight = measurementEditboxes.add({ editValue: defaults.oddPages.shiftRight });
+                    oddPages.shiftDown = measurementEditboxes.add({ editValue: defaults.oddPages.shiftDown });
                 }
             }
 
             with(borderPanels.add()) {
                 staticTexts.add({ staticLabel: "File Type:" });
                 with(dialogColumns.add()) {
-                    fileTypeDropdown = dropdowns.add({ stringList: supportedFileTypes, selectedIndex: 0 });
+                    fileTypeDropdown = dropdowns.add({ stringList: supportedFileTypes, selectedIndex: defaults.fileType });
                 }
             }
         }
         with(dialogColumns.add()) {
-            evenPages.enabledCheckbox = enablingGroups.add({ staticLabel: "Even Pages", checkedState: true });
+            evenPages.enabledCheckbox = enablingGroups.add({ staticLabel: "Even Pages", checkedState: defaults.evenPages.enabled });
             with(evenPages.enabledCheckbox) {
                 with(dialogColumns.add()) {
-                    evenPages.scaleCheckbox = checkboxControls.add({ checkedState: false, staticLabel: "Scale:" });
+                    evenPages.scaleCheckbox = checkboxControls.add({ checkedState: defaults.oddPages.scale, staticLabel: "Scale:" });
                     staticTexts.add({ staticLabel: "Shift Right:" });
                     staticTexts.add({ staticLabel: "Shift Down:" });
                 }
                 with(dialogColumns.add()) {
-                    evenPages.scaleFactor = percentEditboxes.add({ editValue: 100 });
-                    evenPages.shiftRight = measurementEditboxes.add({ editValue: 0 });
-                    evenPages.shiftDown = measurementEditboxes.add({ editValue: 0 });
+                    evenPages.scaleFactor = percentEditboxes.add({ editValue: defaults.evenPages.scaleFactor });
+                    evenPages.shiftRight = measurementEditboxes.add({ editValue: defaults.evenPages.shiftRight });
+                    evenPages.shiftDown = measurementEditboxes.add({ editValue: defaults.evenPages.shiftDown });
                 }
             }
         }
