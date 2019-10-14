@@ -14,20 +14,51 @@ var defaults = {
         shiftRight: 0,
         shiftDown: 0
     },
-    fileType: 0
+    fileType: 0, // 0 = TIFF, 1 = PSD
+    pageRange: 1, // 0 = Range, 1 = All
 };
 
 var doc = app.activeDocument;
 var bookSize = doc.pages.count(); // num of pages in .indd
-var imagesLayer = doc.activeLayer.allGraphics;
+var allGraphics = doc.allGraphics;
+
+// Array.indexOf polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
+// This version tries to optimize by only checking for "in" when looking for undefined and
+// skipping the definitely fruitless NaN search. Other parts are merely cosmetic conciseness.
+// Whether it is actually faster remains to be seen.
+if (!Array.prototype.indexOf)
+    Array.prototype.indexOf = (function(Object, max, min) {
+        "use strict"
+        return function indexOf(member, fromIndex) {
+            if (this === null || this === undefined)
+                throw TypeError("Array.prototype.indexOf called on null or undefined")
+
+            var that = Object(this),
+                Len = that.length >>> 0,
+                i = min(fromIndex | 0, Len)
+            if (i < 0) i = max(0, Len + i)
+            else if (i >= Len) return -1
+
+            if (member === void 0) { // undefined
+                for (; i !== Len; ++i)
+                    if (that[i] === void 0 && i in that) return i
+            } else if (member !== member) { // NaN
+                return -1 // Since NaN !== NaN, it will never be found. Fast-path it.
+            } else // all else
+                for (; i !== Len; ++i)
+                if (that[i] === member) return i
+
+            return -1 // if the value was not found, then return -1
+        }
+    })(Object, Math.max, Math.min)
 
 main();
 
 function main() {
     //Make certain that user interaction (display of dialogs, etc.) is turned on.
     app.scriptPreferences.userInteractionLevel = UserInteractionLevels.interactWithAll;
-    if (imagesLayer.length === 0) {
-        alert('Please select the layer with all of your linked images and try again');
+    if (allGraphics.length === 0) {
+        alert('Could not find any linked graphics in this document.');
     } else if (app.documents.length != 0) {
         myDisplayDialog();
     }
@@ -36,8 +67,9 @@ function main() {
 function myDisplayDialog() {
     myDialog = app.dialogs.add({ name: "Layout Pages" });
     var supportedFileTypes = ["TIFF", "PSD"];
+    var supportedPageRangeTypes = ["Range", "All"];
     var regexs = ["[0-9][0-9]?[0-9]?(?=\.(tif|tiff|TIFF|TIF))", "[0-9][0-9]?[0-9]?(?=\.(psd|PSD))"];
-    var fileTypeDropdown;
+    var fileTypeDropdown, pageRangeControl, pageRangeInput;
     var oddPages = {};
     var evenPages = {};
     with(myDialog) {
@@ -57,9 +89,22 @@ function myDisplayDialog() {
             }
 
             with(borderPanels.add()) {
+                staticTexts.add({ staticLabel: "Pages:" });
+
+                pageRangeControl = radiobuttonGroups.add();
+                with(pageRangeControl) {
+                    for (var i = 0; i < supportedPageRangeTypes.length; i++) {
+                        radiobuttonControls.add({ staticLabel: supportedPageRangeTypes[i], checkedState: defaults.pageRange == i, minWidth: 65 });
+                    }
+                    pageRangeInput = textEditboxes.add();
+                }
+            }
+            with(borderPanels.add()) {
                 staticTexts.add({ staticLabel: "File Type:" });
                 with(dialogColumns.add()) {
-                    fileTypeDropdown = dropdowns.add({ stringList: supportedFileTypes, selectedIndex: defaults.fileType });
+                    with(dialogRows.add()) {
+                        fileTypeDropdown = dropdowns.add({ stringList: supportedFileTypes, selectedIndex: defaults.fileType });
+                    }
                 }
             }
         }
@@ -81,56 +126,83 @@ function myDisplayDialog() {
     }
     var myReturn = myDialog.show();
     if (myReturn == true) {
+        var needsReview = false;
+        var selectedPageRange = pageRangeControl.selectedButton;
+        var pageRange = getValidRange(selectedPageRange === 0 ? pageRangeInput.editContents : '1-' + bookSize);
         var regex = new RegExp(regexs[fileTypeDropdown && fileTypeDropdown.selectedIndex || 0]);
-        if (oddPages.enabledCheckbox.checkedState) {
-            if (oddPages.scaleCheckbox.checkedState) {
-                scalePages("odd", oddPages.scaleFactor.editValue, regex);
-            }
-            shiftPages("odd", oddPages.shiftRight.editValue, oddPages.shiftDown.editValue, regex);
-        }
-        if (evenPages.enabledCheckbox.checkedState) {
-            if (evenPages.scaleCheckbox.checkedState) {
-                scalePages("even", evenPages.scaleFactor.editValue, regex);
-            }
-            shiftPages("even", evenPages.shiftRight.editValue, evenPages.shiftDown.editValue, regex);
+        var isOdd = function(n) { return oddPages.enabledCheckbox.checkedState && n % 2 > 0 },
+            isEven = function(n) { return evenPages.enabledCheckbox.checkedState && n % 2 == 0 };
+
+        $.write('input page range: ' + pageRangeInput.editContents + '\n validated page range: ' + pageRange);
+        if (selectedPageRange === 0 && pageRange.length === 0) {
+            alert('Please enter a valid page range (e.g. "12, 32-33")');
+            needsReview = true;
         }
 
-        myDialog.destroy();
+        var extractPageNum = function(graphic) {
+            var path = graphic.itemLink.filePath || '';
+            return parseInt(regex.exec(path), 10);
+        }
+        var isInRange = function(pageNum) {
+            return pageNum !== NaN &&
+                (isOdd(pageNum) || isEven(pageNum)) &&
+                pageRange.indexOf(pageNum) >= 0;
+        }
+        var transformPage = function(pageNum, pageIndex, data) {
+            if (!isInRange(pageNum)) return;
+            if (data.scaleCheckbox.checkedState) {
+                scalePage(pageIndex, data.scaleFactor.editValue);
+            };
+            shiftPage(pageIndex, data.shiftRight.editValue, data.shiftDown.editValue);
+        }
+
+        for (var i = 0; i < allGraphics.length; i++) {
+            var pageNum = extractPageNum(allGraphics[i]);
+            transformPage(pageNum, i, isOdd(pageNum) ? oddPages : evenPages);
+        }
+
+        if (!needsReview) {
+            myDialog.destroy();
+        }
     } else {
         myDialog.destroy();
     }
 }
 
-function scalePages(side, scaleFactor, regex) {
-    for (var i = 0; i < bookSize; i++) {
-        try {
-            var path = imagesLayer[i].itemLink.filePath || '';
-            var pageNum = parseInt(regex.exec(path), 10);
-            if (pageNum && (side == "odd" && pageNum % 2 > 0) || (side == "even" && pageNum % 2 == 0)) {
-                // rescale images
-                imagesLayer[i].absoluteHorizontalScale = parseInt(scaleFactor);
-                imagesLayer[i].absoluteVerticalScale = parseInt(scaleFactor);
-                $.write("scaled page #" + pageNum + "\n");
-            }
-        } catch (e) {
-            $.write(e);
-        }
-    };
-};
+function getValidRange(inp) {
+    var getRange = function(start, stop) {
+        var res = []
+        for (var i = start; i <= stop; i++) res.push(i); // who needs polyfill when you have for loops amirite
+        return res;
+    }
 
-function shiftPages(side, right, down, regex) {
-    if (right === 0 && down === 0) return;
-    var pageNum, pageLink, i;
-    try {
-        for (i = 0; i < bookSize; i++) {
-            var path = imagesLayer[i].itemLink.filePath || '';
-            var pageNum = parseInt(regex.exec(path), 10);
-            if (pageNum && (side == "odd" && pageNum % 2 > 0) || (side == "even" && pageNum % 2 == 0)) {
-                imagesLayer[i].move(undefined, [right, down]);
-                $.write("shifted page #" + pageNum + "\n");
-            }
+    var getCleanVal = function(inp) {
+        var nums = inp.split('-');
+        var x = parseInt(nums[0]),
+            y = parseInt(nums[1]) || parseInt(nums[0]);
+        return (nums.length > 0 &&
+            x && y &&
+            x <= y &&
+            x <= bookSize && y <= bookSize
+        ) ? getRange(x, y) : false;
+    }
+    var arr = inp.replace(/\s/g, '').split(',');
+    var resArr = [];
+    for (var i = 0; i < arr.length; i++) {
+        var cleanVal = getCleanVal(arr[i]);
+        if (cleanVal) {
+            resArr = resArr.concat(cleanVal);
         }
-    } catch (e) {
-        $.write(e);
-    };
-};
+    }
+    return resArr.sort();
+}
+
+function scalePage(pageIndex, scaleFactor) {
+    allGraphics[pageIndex].absoluteHorizontalScale = parseInt(scaleFactor);
+    allGraphics[pageIndex].absoluteVerticalScale = parseInt(scaleFactor);
+}
+
+function shiftPage(pageIndex, right, down) {
+    if (right === 0 && down === 0) return;
+    allGraphics[pageIndex].move(undefined, [right, down]);
+}
