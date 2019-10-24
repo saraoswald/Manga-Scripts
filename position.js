@@ -133,7 +133,6 @@ function myDisplayDialog() {
         var isOdd = function(n) { return oddPages.enabledCheckbox.checkedState && n % 2 > 0 },
             isEven = function(n) { return evenPages.enabledCheckbox.checkedState && n % 2 == 0 };
 
-        $.write('input page range: ' + pageRangeInput.editContents + '\n validated page range: ' + pageRange);
         if (selectedPageRange === 0 && pageRange.length === 0) {
             alert('Please enter a valid page range (e.g. "12, 32-33")');
             needsReview = true;
