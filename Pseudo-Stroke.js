@@ -19,20 +19,21 @@ function isError(obj) {
     return false;
 }
 
-function addStroke(obj) {
-    if (isError(obj)) return;
+function addStroke(srcObj) {
+    if (isError(srcObj)) return;
     // Check to see if the target character style already exists. If so, use it. If not, create it.
-    var existingStyle = doc.characterStyles.itemByName(defaultObject.name);
-    var targetStyle = existingStyle.isValid 
-    	? existingStyle
-    	: doc.characterStyles.add(defaultObject);
+    var existingStyle = doc.objectStyles.itemByName(defaultObject.name);
+    var targetStyle = existingStyle.isValid ?
+        existingStyle :
+        doc.objectStyles.add(defaultObject);
 
     // duplicate the object in place
-    var newObj = obj.duplicate();
-    // apply the style to every "character" in the target object
-    for (var i = 0; i < newObj.characters.length; i++) {
-        obj.characters[i].applyCharacterStyle(targetStyle);
+    var outlines = srcObj.duplicate().createOutlines();
+    // apply the style to every new outline created
+    for (var i = 0; i < outlines.length; i++) {
+        outlines[i].applyObjectStyle(targetStyle);
     }
+    srcObj.bringToFront();
 }
 
 addStroke(app.selection[0])
