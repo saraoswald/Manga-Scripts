@@ -14,7 +14,6 @@ var defaults = {
         shiftRight: 0,
         shiftDown: 0
     },
-    fileType: 0, // 0 = TIFF, 1 = PSD
     pageRange: 1, // 0 = Range, 1 = All
 };
 
@@ -66,10 +65,8 @@ function main() {
 
 function myDisplayDialog() {
     myDialog = app.dialogs.add({ name: "Layout Pages" });
-    var supportedFileTypes = ["TIFF", "PSD"];
     var supportedPageRangeTypes = ["Range", "All"];
-    var regexs = ["[0-9][0-9]?[0-9]?(?=\.(tif|tiff|TIFF|TIF))", "[0-9][0-9]?[0-9]?(?=\.(psd|PSD))"];
-    var fileTypeDropdown, pageRangeControl, pageRangeInput;
+    var pageRangeControl, pageRangeInput;
     var oddPages = {};
     var evenPages = {};
     with(myDialog) {
@@ -99,14 +96,6 @@ function myDisplayDialog() {
                     pageRangeInput = textEditboxes.add();
                 }
             }
-            with(borderPanels.add()) {
-                staticTexts.add({ staticLabel: "File Type:" });
-                with(dialogColumns.add()) {
-                    with(dialogRows.add()) {
-                        fileTypeDropdown = dropdowns.add({ stringList: supportedFileTypes, selectedIndex: defaults.fileType });
-                    }
-                }
-            }
         }
         with(dialogColumns.add()) {
             evenPages.enabledCheckbox = enablingGroups.add({ staticLabel: "Even Pages", checkedState: defaults.evenPages.enabled });
@@ -129,7 +118,7 @@ function myDisplayDialog() {
         var needsReview = false;
         var selectedPageRange = pageRangeControl.selectedButton;
         var pageRange = getValidRange(selectedPageRange === 0 ? pageRangeInput.editContents : '1-' + bookSize);
-        var regex = new RegExp(regexs[fileTypeDropdown && fileTypeDropdown.selectedIndex || 0]);
+        var regex = /[0-9][0-9]?[0-9]?(?=(_\d)?\.(psd|PSD|tif|tiff|TIFF|TIF))/;
         var isOdd = function(n) { return oddPages.enabledCheckbox.checkedState && n % 2 > 0 },
             isEven = function(n) { return evenPages.enabledCheckbox.checkedState && n % 2 == 0 };
 
@@ -139,8 +128,10 @@ function myDisplayDialog() {
         }
 
         var extractPageNum = function(graphic) {
-            var path = graphic.itemLink.filePath || '';
-            return parseInt(regex.exec(path), 10);
+            var path = graphic.itemLink.filePath;
+            var regexResult = regex.exec(path);
+            return path && regexResult.length > 0 ?
+                parseInt(regexResult[0], 10) : 0;
         }
         var isInRange = function(pageNum) {
             return pageNum !== NaN &&
@@ -157,7 +148,7 @@ function myDisplayDialog() {
 
         for (var i = 0; i < allGraphics.length; i++) {
             var pageNum = extractPageNum(allGraphics[i]);
-            transformPage(pageNum, i, isOdd(pageNum) ? oddPages : evenPages);
+            if (pageNum > 0) transformPage(pageNum, i, isOdd(pageNum) ? oddPages : evenPages);
         }
 
         if (!needsReview) {
