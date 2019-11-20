@@ -4,9 +4,13 @@
 
 ## The Fast and Simple Way
 1) To locate your Scripts folder, open InDesign. Open the Scripts panel (Window > Utilities > Scripts). Right-click on the **User** folder, and select **Reveal in Finder**. This is where you can save any JavaScript files you want to run in InDesign.
-![](resources/script-guide-2.png)
-2) Navigate to a specific script you'd like to download, like [this one](https://github.com/saraoswald/Manga-Scripts/blob/master/Pseudo-Stroke.js). Right-click on "Raw" in the upper right-hand corner of the page, and **Save Link As...**
-![](resources/script-guide-1.png) 
+
+!["Reveal in Finder" will obvs be something else in Windows do not @ me](resources/script-guide-2.png)
+
+2) Navigate to a specific GitHub script you'd like to download, like [this one](https://github.com/saraoswald/Manga-Scripts/blob/master/Pseudo-Stroke.js). Right-click on "Raw" in the upper right-hand corner of the page, and **Save Link As...**
+
+![Click "Raw" in GitHub to get just the JavaScript file by itself](resources/script-guide-1.png) 
+
 3) Save the JavaScript file in the folder you found in Step 1. When you go back to the Scripts panel in InDesign, you should now see the file.
 4) You can run the file either by:
     - Right-click and **Run Script**
@@ -18,4 +22,5 @@ Once you have a file available in the Scripts panel, you can assign it to any av
 1) In InDesign, open **Edit > Keyboard Shortcuts...**
 2) Select the **Product Area** as **Scripts**
 3) Select whichever script you'd like to assign a shortcut. In the **New Shortcut** field, press your desired keystroke, and then click **Assign** to save it. Finally, click **OK**. 
-![](resources/script-guide-3.png) 
+
+![The dialog should look something like this when you've assigned a shortcut](resources/script-guide-3.png) 
