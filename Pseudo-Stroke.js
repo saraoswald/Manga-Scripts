@@ -13,14 +13,12 @@ var doc = app.activeDocument;
 
 function isError(obj) {
     if (!(obj instanceof TextFrame)) {
-        alert('Please select a text frame and try again');
         return true;
     }
     return false;
 }
 
 function addStroke(srcObj) {
-    if (isError(srcObj)) return;
     // Check to see if the target character style already exists. If so, use it. If not, create it.
     var existingStyle = doc.objectStyles.itemByName(defaultObject.name);
     var targetStyle = existingStyle.isValid ?
@@ -36,4 +34,3 @@ function addStroke(srcObj) {
     srcObj.bringToFront();
 }
 
-addStroke(app.selection[0])
