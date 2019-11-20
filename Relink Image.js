@@ -7,8 +7,8 @@
 //  You want to relink the image in the INDD to be the new .tif
 // 
 // Note: 
-//  The converted file needs to be in the same directory as the original image. 
-//  You can edit the `newPath` variable below if you really need the new image to be in a new directory.
+//  The new image needs to be in the same folder as the original image. 
+//  You can edit the `newPath` variable below if you really need the new image to be in a different folder.
 
 // Change the below file types as needed!
 var oldFileType = '.psd';
