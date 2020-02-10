@@ -18,7 +18,7 @@ var defaults = {
 };
 
 var doc = app.activeDocument;
-var bookSize = doc.pages.count(); // num of pages in .indd
+var bookSize = Number(doc.pages.lastItem().name); // num of pages in .indd
 var allGraphics = doc.allGraphics;
 
 // Array.indexOf polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
@@ -118,7 +118,7 @@ function myDisplayDialog() {
         var needsReview = false;
         var selectedPageRange = pageRangeControl.selectedButton;
         var pageRange = getValidRange(selectedPageRange === 0 ? pageRangeInput.editContents : '1-' + bookSize);
-        var regex = /[0-9][0-9]?[0-9]?(?=(_\d)?\.(psd|PSD|tif|tiff|TIFF|TIF))/;
+        var regex = /\d{3}(?=\_?\d?\.[A-Za-z]{3,4})/;
         var isOdd = function(n) { return oddPages.enabledCheckbox.checkedState && n % 2 > 0 },
             isEven = function(n) { return evenPages.enabledCheckbox.checkedState && n % 2 == 0 };
 
@@ -130,7 +130,7 @@ function myDisplayDialog() {
         var extractPageNum = function(graphic) {
             var path = graphic.itemLink.filePath;
             var regexResult = regex.exec(path);
-            return path && regexResult.length > 0 ?
+            return path && regexResult !== null && regexResult.length > 0 ?
                 parseInt(regexResult[0], 10) : 0;
         }
         var isInRange = function(pageNum) {
