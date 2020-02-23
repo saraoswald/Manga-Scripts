@@ -128,7 +128,7 @@ function myDisplayDialog() {
         }
 
         var extractPageNum = function(graphic) {
-            var path = graphic.itemLink.filePath;
+            var path = graphic && graphic.itemLink && graphic.itemLink.filePath || null;
             var regexResult = regex.exec(path);
             return path && regexResult !== null && regexResult.length > 0 ?
                 parseInt(regexResult[0], 10) : 0;
