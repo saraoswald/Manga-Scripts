@@ -12,18 +12,22 @@ function main() {
 
     for (var i = 0; i < selections.length && !hasErrors; i++) {
         var textFrame = selections[i];
-        hasErrors = isError(textFrame);
+        var frameHasErrors = isError(textFrame);
+        hasErrors = hasErrors || frameHasErrors;
 
-        if (!hasErrors) {
+        if (!frameHasErrors) {
             textFrame.absoluteRotationAngle += skewFactor;
             textFrame.absoluteShearAngle += skewFactor;
         };
+    }
+
+    if (hasErrors) {
+        alert('Some selections were not text frames and were skipped');
     }
 }
 
 function isError(obj) {
     if (!(obj instanceof TextFrame)) {
-        alert('Please select some text frames and try again');
         return true;
     }
     return false;
