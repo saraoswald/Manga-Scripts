@@ -15,6 +15,24 @@
         |   about the   |
         |     wait.     |
         |_______________|
+
+
+
+    ----------- New Feature 04/03/2020 -----------
+        - Breaks on a hyphen if there are no spaces in the text frame
+    Before: 
+        _________________
+        |               |
+        |   Asako-san!  |
+        |               |
+        |_______________|
+
+    After: 
+        _________________
+        |               |
+        |     Asako-    |
+        |      san!     |
+        |_______________|
 */
 
 function main() {
@@ -22,7 +40,9 @@ function main() {
         selections = app.selection;
 
     for (var i = 0; i < selections.length && !hasErrors; i++) {
-        var textFrame = selections[i];
+        var textFrame = textFrame instanceof InsertionPoint ?
+            selections[i] :
+            selections[i].parentTextFrames[0];
         hasErrors = isError(textFrame);
 
         if (!hasErrors) {
@@ -32,6 +52,7 @@ function main() {
 }
 
 function isError(obj) {
+    alert(obj);
     if (!(obj instanceof TextFrame)) {
         alert('Please select some text frames and try again');
         return true;
@@ -41,8 +62,16 @@ function isError(obj) {
 
 // replaces the last space with a line break
 function addBreakEnd(str) {
-    var arr = str.trim().split(' ');
-    return arr.slice(0, arr.length - 1).join(' ') + '\n' + arr[arr.length - 1];
+    str = str.trim();
+    // if there are no spaces in the string, break at a hyphen
+    var delimiter = str.split(' ').length > 1 ? ' ' :
+        (str.split('-').length === 2 ? '-' :
+            ' '); // there's no indexOf RIP
+    var arr = str.split(delimiter);
+
+    return arr.length > 1 ?
+        arr.slice(0, arr.length - 1).join(delimiter) + delimiter + '\n' + arr[arr.length - 1] :
+        str;
 }
 
 if (!String.prototype.trim) {
@@ -50,5 +79,7 @@ if (!String.prototype.trim) {
         return this.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, '');
     };
 }
+
+
 
 main();
