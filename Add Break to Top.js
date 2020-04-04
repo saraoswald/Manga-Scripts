@@ -22,9 +22,9 @@ function main() {
         selections = app.selection;
 
     for (var i = 0; i < selections.length && !hasErrors; i++) {
-        var textFrame = textFrame instanceof InsertionPoint ?
-            selections[i] :
-            selections[i].parentTextFrames[0];
+        var textFrame = selections[i] instanceof InsertionPoint ?
+            selections[i].parentTextFrames[0] :
+            selections[i];
         hasErrors = isError(textFrame);
 
         if (!hasErrors) {
