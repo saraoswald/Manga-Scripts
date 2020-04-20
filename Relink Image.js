@@ -8,17 +8,17 @@
 // 
 // Note: 
 //  The new image needs to be in the same folder as the original image. 
-//  You can edit the `newPath` variable below if you really need the new image to be in a different folder.
 
 // Change the below file types as needed!
-var oldFileType = '.psd';
-var newFileType = '.tif';
+var fileTypes = [
+    { oldType: '.psd', newType: '.tif' },
+    { oldType: '.tif', newType: '.psd' }
+]
 
 function main() {
     if (!isError()) {
         var srcImage = app.activeDocument.layoutWindows[0].activePage.allGraphics[0];
-        var newPath = srcImage.itemLink.filePath.replace(oldFileType, newFileType);
-        relink(srcImage, newPath);
+        relink(srcImage);
     }
 }
 
@@ -30,8 +30,19 @@ function isError() {
     return false;
 }
 
-function relink(srcImage, destinationPath) {
-    srcImage.itemLink.relink(new File(destinationPath));
+function relink(srcImage) {
+    var isFound = false;
+    for (var i = 0; i < fileTypes.length && !isFound; i++) {
+        var ref = fileTypes[i];
+        var oldPath = srcImage.itemLink.filePath;
+        var newPath = oldPath.replace(ref.oldType, ref.newType);
+        var newImage = new File(newPath);
+
+        if (oldPath !== newPath && newImage.exists) {
+            srcImage.itemLink.relink(newImage);
+            isFound = true;
+        }
+    }
 }
 
 main()
