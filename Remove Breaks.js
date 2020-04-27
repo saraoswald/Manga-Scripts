@@ -1,6 +1,6 @@
 // ----------- Remove Breaks ----------- // 
 /* 
-    Remove all the line breaks in a text frame
+    Remove all the line breaks (Command+Return on Mac, Ctrl+Return on PC) in a text frame
 
     Very useful for when you've been manually balancing a paragraph and it looks worse than when you started 
 */
