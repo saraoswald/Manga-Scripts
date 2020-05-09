@@ -70,7 +70,6 @@ function applyKerning(srcObj) {
     // search through each "paragraph" in a text frame
     for (var i = 0; i < pargs.length; i++) {
         var chars = pargs[i].characters;
-        // only apply to the paragraph style for captions
         // search though each individual character
         for (var j = 0; j < chars.length; j++) {
             // check next character to see if it completes a pair as targeted in kerningPairs
