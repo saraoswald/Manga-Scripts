@@ -79,23 +79,7 @@ function doAddStroke(srcObj) {
 }
 
 function addStroke(srcObj) {
-    var resultingGroups = new Array();
-
-    if (srcObj instanceof Group) {
-        var children = srcObj.allPageItems;
-        var newGroup = new Array();
-        // ungroup it first since the outline will be created outside of the group
-        // and indesign won't let me put it in the group idk
-        srcObj.ungroup();
-        for (var i = 0; i < children.length; i++) {
-            // add a stroke to each child
-            newGroup.push(doAddStroke(children[i]));
-        }
-        // put everything back into a group, and then pass it on to be selected
-        resultingGroups.push(doc.groups.add(newGroup));
-    } else resultingGroups.push(doAddStroke(srcObj));
-
-    return resultingGroups;
+    return new Array(doAddStroke(srcObj));
 }
 
 function doRemoveStroke(srcObj) {
@@ -137,11 +121,11 @@ function removeStroke(srcObj) {
 function applyStroke(srcObj) {
     // check if the group already has a pseudostroke
     if (hasPseudoStroke(srcObj))
-        removeStroke(srcObj);
+        return removeStroke(srcObj);
     // check if one of the group's children has pseudostroke
     else if (childHasPseudoStroke(srcObj))
-        removeStroke(srcObj);
-    else addStroke(srcObj);
+        return removeStroke(srcObj);
+    else return addStroke(srcObj);
 }
 
 var hasErrors = false;
