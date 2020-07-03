@@ -25,22 +25,34 @@ function hasPseudoStroke(obj) {
     return obj.isValid && obj.extractLabel(PARENT_LABEL) === 'true';
 }
 
-function childHasPseudoStroke(obj) {
-    // if it's not a group, or it's magically empty, return false
-    if (!(obj instanceof Group) || !obj.allPageItems || obj.allPageItems.length < 1) {
+// find condition within a Group
+// returns immediately once the mapper function returns true
+function find(group, mapFn) {
+    if (!group || !(group instanceof Group) || !group.allPageItems || group.allPageItems.length < 1) {
         return false;
     }
-
-    var children = obj.allPageItems;
+    var children = group.allPageItems;
     var i = 0;
-    var foundStroke = false;
+    var found = false;
     while (i < children.length) {
-        if (hasPseudoStroke(children[i])) {
-            foundStroke = true;
+        if (mapFn(children[i])) {
+            found = true;
+            break;
         }
         i++;
     }
-    return foundStroke;
+    return found;
+}
+
+function childHasPseudoStroke(obj) {
+    // if it's not a group, or it's magically empty, return false
+    var mapFn = function(child) { return hasPseudoStroke(child) };
+    return find(obj, mapFn);
+}
+
+function childIsTextFrame(obj) {
+    var mapFn = function(child) { return child instanceof TextFrame };
+    return find(obj, mapFn);
 }
 
 // check for outline label
@@ -56,29 +68,68 @@ function isError(obj) {
     return false;
 }
 
+function outline(obj) {
+    if (obj instanceof Group) {
+        var children = obj.allPageItems;
+        obj.ungroup();
+        var outlineArr = new Array();
+        for (var i = 0; i < children.length; i++) {
+            if (children[i].createOutlines) {
+                var childOutlines = children[i].createOutlines();
+                // I could not get Array.concat to work for the life of me
+                for (var j = 0; j < childOutlines.length; j++)
+                    outlineArr.push(childOutlines[j]);
+            }
+        }
+        return outlineArr;
+    } else return obj.createOutlines();
+}
+
 function doAddStroke(srcObj) {
     // Check to see if the target character style already exists. If so, use it. If not, create it.
     var existingStyle = doc.objectStyles.itemByName(defaultObject.name);
     var targetStyle = existingStyle.isValid ?
         existingStyle :
         doc.objectStyles.add(defaultObject);
+    var finalGroup = new Array(srcObj);
+
     // duplicate the object in place
-    var outlines = srcObj instanceof TextFrame ? srcObj.duplicate().createOutlines() : new Array(srcObj.duplicate());
-    var outlineObjs = new Array(srcObj);
+    var duplicate = srcObj.duplicate();
+    var outlines = srcObj instanceof TextFrame || childIsTextFrame(srcObj) ?
+        outline(duplicate) :
+        new Array(duplicate);
+    var formattedOutlines = new Array();
+    var needToGroupOutlines = false;
     // apply the style to every new outline created
     for (var i = 0; i < outlines.length; i++) {
         outlines[i].applyObjectStyle(targetStyle);
-        outlines[i].insertLabel(OUTLINE_LABEL, 'true');
+        formattedOutlines.push(outlines[i]);
 
-        outlineObjs.push(outlines[i]);
+        if (outlines[i] instanceof Group) {
+            outlines[i].insertLabel(OUTLINE_LABEL, 'true');
+            finalGroup.push(outlines[i]);
+        } else needToGroupOutlines = true;
     }
+    if (needToGroupOutlines) {
+        var groupedOutlines = null;
+        if (formattedOutlines.length > 1) {
+            groupedOutlines = doc.groups.add(formattedOutlines);
+        } else if (formattedOutlines.length == 1) {
+            groupedOutlines = formattedOutlines[0];
+        }
+        groupedOutlines.insertLabel(OUTLINE_LABEL, 'true');
+        finalGroup.push(groupedOutlines);
+    }
+
     srcObj.bringToFront();
-    var newGroup = doc.groups.add(outlineObjs);
+
+    var newGroup = doc.groups.add(finalGroup);
     newGroup.insertLabel(PARENT_LABEL, 'true');
     return newGroup;
 }
 
 function addStroke(srcObj) {
+
     return new Array(doAddStroke(srcObj));
 }
 
