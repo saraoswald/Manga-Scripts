@@ -1,4 +1,6 @@
-﻿// Feel free to change the default values
+﻿app.scriptPreferences.measurementUnit = MeasurementUnits.POINTS;
+
+// Feel free to change the default values
 var defaults = {
     oddPages: {
         enabled: true,
@@ -196,3 +198,5 @@ function shiftPage(pageIndex, right, down) {
     if (right === 0 && down === 0) return;
     allGraphics[pageIndex].move(undefined, [right, down]);
 }
+
+app.scriptPreferences.measurementUnit = AutoEnum.AUTO_VALUE
