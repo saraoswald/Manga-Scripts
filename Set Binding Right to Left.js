@@ -1,0 +1,1 @@
+app.documents[0].documentPreferences.pageBinding = PageBindingOptions.RIGHT_TO_LEFT;
