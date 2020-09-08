@@ -6,7 +6,7 @@
     For example, in a 200-page document:
     | Input | Page Binding Setting | Final Page |
     |-------|----------------------|------------|
-    |   40  |     Left to Right    |    160     |
+    |   40  |     Left to Right    |    161     |
     |   40  |     Right to Left    |     40     |
 
 
