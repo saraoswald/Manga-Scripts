@@ -3,7 +3,7 @@
     Works like the built-in "Go to Page" function, but also works for "backwards" (Left to Right) books. 
     Uses the pageBinding setting in the document to determine which InDesign page to take you to. 
     
-    For example,
+    For example, in a 200-page document:
     | Input | Page Binding Setting | Final Page |
     |-------|----------------------|------------|
     |   40  |     Left to Right    |    160     |
