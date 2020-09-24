@@ -38,20 +38,24 @@ try {
 function getFrame(page, layer) {
     var targetFrame = null;
 
-    var findFrame = function(arr) {
+    var findFrame = function(arr, ignoreLayer) {
         var returnVal = null;
         // iterate backwards because it's most likely on the bottom
         for (var i = arr.length; i > -1; i-- && returnVal === null) {
-            if (arr[i] instanceof Rectangle && arr[i].itemLayer == layer)
+            if (arr[i] && arr[i] instanceof Rectangle &&
+                !arr[i].itemLayer.locked &&
+                (ignoreLayer || arr[i].itemLayer == layer)) {
                 returnVal = arr[i];
+            }
         }
         return returnVal;
     }
 
-    // check if there's a master 
+    // check if there's a master, override the master items and use the frame there 
     if (page.appliedMaster !== null && page.appliedMaster.isValid) {
-        var masterFrame = findFrame(page.masterPageItems);
-        targetFrame = masterFrame && masterFrame.isValid ? masterFrame.override(page) : null;
+        var masterFrame = findFrame(page.masterPageItems, true);
+        targetFrame = masterFrame && masterFrame.isValid ?
+            masterFrame.override(page) : null;
     };
     // check if there's a Rectangle at the bottom of the Art layer
     if (targetFrame === null) targetFrame = findFrame(page.allPageItems);
@@ -61,6 +65,7 @@ function getFrame(page, layer) {
             geometricBounds: getPageBounds(page),
             itemLayer: targetLayer
         });
+
     return targetFrame;
 }
 
@@ -69,7 +74,7 @@ function placeArtOnPage(page, layer, image) {
     if (!page.isValid || !layer.isValid || !image.exists) return;
 
     var frame = getFrame(page, layer);
-    if (frame !== null) frame.place(image);
+    if (frame) frame.place(image);
 }
 
 // takes bounds input and gives output in the form [y1, x1, y2, x2]
