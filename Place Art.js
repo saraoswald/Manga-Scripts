@@ -20,8 +20,16 @@ var targetLayer = doc.layers.itemByName('Art').isValid ?
     doc.layers.itemByName('Art') :
     doc.layers.add({ name: 'Art' });
 
+function getFilter() {
+    if (File.fs == "Windows") {
+        return "*.*";
+    } else {
+        return function() { return true }
+    }
+}
+
 try {
-    var artFiles = File.openDialog('Select art files to place', null, true);
+    var artFiles = File.openDialog('Select art files to place', getFilter(), true);
     if (artFiles !== null && artFiles.length > 0) { // in case the user pressed cancel or something
         for (var i = 0; i < artFiles.length; i++) {
             var pageNum = extractPageNum(artFiles[i]);
