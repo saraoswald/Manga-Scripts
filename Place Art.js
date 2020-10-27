@@ -129,7 +129,7 @@ function getFrame(page, layer) {
 }
 
 function extractPageNum(path) {
-    var regex = /\d{3,4}(?=\_?\d?\.[A-Za-z]{3,4})/;
+    var regex = /\d{3,4}(?=\_?\d?[a-zA-Z]?\.[A-Za-z]{3,4})/;
     var regexResult = regex.exec(path);
     return path && regexResult !== null && regexResult.length > 0 ?
         parseInt(regexResult[0], 10) : 0;
