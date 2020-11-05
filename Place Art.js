@@ -1,5 +1,7 @@
 /* 
     Place Art.js
+
+    Updated: Nov 5 2020
     
     ----------------
 
@@ -24,6 +26,9 @@ var doc = app.activeDocument;
 var bookSize = doc.pages.count();
 var isLtR = doc.documentPreferences.pageBinding == PageBindingOptions.LEFT_TO_RIGHT;
 
+// define popup at the top level to please the runtime
+var progressBarWindow = new Window("palette", "Placing Art");
+progressBarWindow.minimumSize = { width: 250, height: 50 }; // this can't be set during initialization despite what the documentation says!!
 
 var targetLayer = doc.layers.itemByName('Art').isValid ?
     doc.layers.itemByName('Art') :
@@ -42,10 +47,32 @@ try {
     if (artFiles !== null && artFiles.length > 0) { // in case the user pressed cancel or something
         var pagesCount = 0; // for debugging :')
         var hasErrors = false;
-        for (var i = 0; !hasErrors && i < artFiles.length; i++) {
-            hasErrors = placeArtOnPage(artFiles[i]);
-            if (!hasErrors) pagesCount++;
+
+
+        // get a little progress bar going
+        var progressBar = progressBarWindow.add('progressbar', undefined, 'Progress', artFiles.length);
+        progressBar.minimumSize = { width: 200, height: 10 };
+        // construct info label for the progress bar's.... progress
+        function getCurrPage(curr, file) {
+            return curr.toString() + "/" + artFiles.length.toString() + " - " + file.name;
         }
+        // the static text's length can't be edited once it's initialized, so try to simulate how long the string will get
+        // (progressBar.minWidth does absolutely nothing)
+        var progressNumber = progressBarWindow.add('statictext', undefined, getCurrPage(artFiles.length, artFiles[0]));
+        progressBarWindow.show();
+
+        for (var i = 0; !hasErrors && i < artFiles.length; i++) {
+            // actually place the art
+            hasErrors = placeArtOnPage(artFiles[i]);
+            if (!hasErrors) pagesCount++; // keep track of how many images succeeded
+            // update progress bar values + text
+            progressBar.value = i;
+            progressNumber.text = getCurrPage(i + 1, artFiles[i]);
+            progressBarWindow.update();
+        }
+
+        progressBarWindow.close();
+
         if (!hasErrors && pagesCount === 0) alert("No art files found! Make sure the file names are formatted like 123.TIF");
     }
 } catch (err) { alert(err) }; // the debugger that will never let u down :')
