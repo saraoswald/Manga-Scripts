@@ -1,7 +1,7 @@
 /* 
     Place Art.js
 
-    Updated: Nov 5 2020
+    Updated: Nov 12 2020
     
     ----------------
 
@@ -167,7 +167,7 @@ function extractPageNum(path) {
 function getPageBounds(page) {
     var prfs = doc.documentPreferences,
         pb = page.bounds,
-        bleedLeft = page.side == PageSideOptions.RIGHT_HAND ? 0 : prfs.documentBleedInsideOrLeftOffset,
+        bleedLeft = page.side == PageSideOptions.RIGHT_HAND ? 0 : prfs.documentBleedOutsideOrRightOffset,
         bleedRight = page.side == PageSideOptions.LEFT_HAND ? 0 : prfs.documentBleedOutsideOrRightOffset;
     var y1 = pb[0] - prfs.documentBleedTopOffset,
         x1 = pb[1] - bleedLeft,
