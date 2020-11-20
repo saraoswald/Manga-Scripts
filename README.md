@@ -44,6 +44,7 @@ Once you have a file available in the Scripts panel, you can assign it to any av
 2) In VS Code, open a new text file (`Command/Control + N`), and copy and paste the script below into it:
 > alert("Hello World")
 3) Press `Command/Control +R` (the shortcut from the setup section above), and you should get this popup in InDesign: 
+
 ![Keyboard Shortcuts window in VS Code](resources/ID-hello-world.png) 
 
 **(optional)** You can also set up the [ExtendScript Debugger extension](https://marketplace.visualstudio.com/items?itemName=Adobe.extendscript-debug) for a true debugging experience, though I've had mixed results attaching it to the InDesign process. 
