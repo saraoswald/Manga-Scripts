@@ -1,3 +1,8 @@
+**Contents**
+- [How to use scripts in InDesign](#how-to-use-scripts-in-indesign)
+- [How to write scripts in InDesign](#how-to-write-scripts-in-indesign)
+- [Frequently Asked Questions](#faq)
+
 # How to use scripts in InDesign
 
 > This guide will be using Adobe CC 2019 on Mac OS X, but the overall process should be similar on different versions and operating systems.
@@ -25,6 +30,30 @@ Once you have a file available in the Scripts panel, you can assign it to any av
 
 ![The dialog should look something like this when you've assigned a shortcut](resources/script-guide-3.png) 
 
+# How to write scripts in InDesign
+## Setup
+1) Install [Visual Studio Code](https://code.visualstudio.com/)
+2) In VS Code, install the [Adobe Script Runner Extension](https://marketplace.visualstudio.com/items?itemName=renderTom.adobe-script-runner#installation)
+3) Open Keyboard Shortcuts (On Windows, `File > Preferences > Keyboard Shortcuts` / On Mac, `Code > Preferences > Keyboard Shortcuts`)
+4) In the search bar, type "adobescriptrunner"
+![Keyboard Shortcuts window in VS Code](resources/vscode-keyboard-shortcuts.png) 
+5) Reset the keybinding for `Command/Control + R` to be InDesign. [Refer to this guide for help with binding keyboard shortcuts.](https://code.visualstudio.com/docs/getstarted/keybindings#_keyboard-shortcuts-editor)
+
+## Run a Sample Script
+1) Make sure that InDesign is open.
+2) In VS Code, open a new text file (`Command/Control + N`), and copy and paste the script below into it:
+> alert("Hello World")
+3) Press `Command/Control +R` (the shortcut from the setup section above), and you should get this popup in InDesign: 
+![Keyboard Shortcuts window in VS Code](resources/ID-hello-world.png) 
+
+**(optional)** You can also set up the [ExtendScript Debugger extension](https://marketplace.visualstudio.com/items?itemName=Adobe.extendscript-debug) for a true debugging experience, though I've had mixed results attaching it to the InDesign process. 
+
+## Resouces
+- [Latest ExtendScript API](https://www.indesignjs.de/extendscriptAPI/indesign-latest/)
+- [CS6 Object Model / Class Index](http://jongware.mit.edu/idcs6js/inxx.html)
+- [Script UI Guide for Dialogs and Stuff (PDF)](https://adobeindd.com/view/publications/a0207571-ff5b-4bbf-a540-07079bd21d75/92ra/publication-web-resources/pdf/scriptui-2-16-j.pdf)
+
+
 # FAQ
 ## Do your scripts only work in CC? 
 I only have access to Adobe CC, so that's the only place I'm able to test them. I have no idea if they'll work on your computer, but I try my best not to use features I know aren't supported before CC. 
@@ -40,6 +69,19 @@ I'm happy to help you figure out what's wrong, but I need the following from you
 3) What version of InDesign are you using? 
 4) What operating system are you using (Mac/Windows)?
 5) (Optional) A sample file that you can reproduce the issue in reliably
+
+## What tools do you use?
+- Adobe CC 2020
+- [Visual Studio Code](https://code.visualstudio.com/)
+- [VS Code Adobe Script Runner Extension](https://marketplace.visualstudio.com/items?itemName=renderTom.adobe-script-runner)
+- [VS Code ExtendScript Debugger](https://marketplace.visualstudio.com/items?itemName=Adobe.extendscript-debug)
+
+I do not recommend using the ExtendScript Toolkit application from Adobe. It's no longer supported in CC, and it's a very clunky experience. 
+
+## Can I use your scripts to write my own? 
+Yes, you can use parts of these scripts in your own so long as you: 
+1) Do not sell them
+2) Credit me
 
 ## Can you write an InDesign script for me?
 Sure! Feel free to shoot me a DM on [Twitter](https://twitter.com/salinsley). 
