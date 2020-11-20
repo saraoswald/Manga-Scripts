@@ -43,11 +43,42 @@ Once you have a file available in the Scripts panel, you can assign it to any av
 1) Make sure that InDesign is open.
 2) In VS Code, open a new text file (`Command/Control + N`), and copy and paste the script below into it:
 > alert("Hello World")
-3) Press `Command/Control +R` (the shortcut from the setup section above), and you should get this popup in InDesign: 
+3) Press `Command/Control + R` (the shortcut from the setup section above), and you should get this popup in InDesign: 
 
 ![Keyboard Shortcuts window in VS Code](resources/ID-hello-world.png) 
 
 **(optional)** You can also set up the [ExtendScript Debugger extension](https://marketplace.visualstudio.com/items?itemName=Adobe.extendscript-debug) for a true debugging experience, though I've had mixed results attaching it to the InDesign process. 
+
+## Sample Scripts
+To help you get started, here are a couple sample scripts. 
+
+**Keep in mind that ExtendScript is based off of a very outdated version of Javascript, so it does not support most modern functions.** Here are some examples of features that are not supported: 
+- [Array.indexOf](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf)
+- [String.trim](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim)
+- [Array.map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map)
+- [Arrow functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions)
+- [Template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals)
+
+**Display info about the current active page:**
+
+    var activePage = app.activeWindow.activePage;
+    alert('Page ' + activePage.name + '\n'
+        + 'Text Frames: ' + activePage.textFrames.length + '\n'
+        + 'Graphics: ' + activePage.allGraphics.length + '\n'
+        + 'Side: ' + activePage.side.toString() + '\n' 
+        + 'Bounds: ' + activePage.bounds);
+
+**Display the contents of all the selected text frames, without line breaks**:
+
+    var selections = app.selection,
+        output = "";
+    for(var i = 0; i < selections.length; i++){
+        if(selections[i] instanceof TextFrame && !!selections[i].contents){
+            output += selections[i].contents.replace(/[^\S ]+/g,'') + '\n';
+        }
+    }
+    alert(output);
+
 
 ## Resouces
 - [Latest ExtendScript API](https://www.indesignjs.de/extendscriptAPI/indesign-latest/)
