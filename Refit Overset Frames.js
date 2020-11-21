@@ -2,11 +2,16 @@
 /* 
     Refits all of the overflowing frames on either the current page or all pages. 
 
+    Usage Instructions: 
+    - Select one or many text frames that are overset
+    - Run this script
+
     This is the same thing as doing `Object > Fitting > Fit Frame to Content`, but on a bunch of text frames at once. 
+    UPDATE: Now the script will expand the frame by 1 pixel until it's no longer overset
 
     Installation Instructions: https://github.com/saraoswald/Manga-Scripts/#how-to-use-scripts-in-indesign
 
-    Nov 19 2020, Sara Linsley
+    Nov 21 2020, Sara Linsley
 */
 
 /* ------ Progress Bar Utility Functions ------ */
@@ -44,6 +49,8 @@ function destroyProgressBar() {
 /* ------ Start of Script ------ */
 
 var doc = app.activeDocument;
+var usersUnits = app.scriptPreferences.measurementUnit; // so we can revert 'em back later
+app.scriptPreferences.measurementUnit = MeasurementUnits.PIXELS;
 
 function myDisplayDialog() {
     myDialog = app.dialogs.add({ name: "Refit Overset Frames" });
@@ -78,6 +85,7 @@ function myDisplayDialog() {
     } else {
         myDialog.destroy();
     }
+    app.scriptPreferences.measurementUnit = usersUnits;
 }
 
 // on a given page, loops through all the text frames
@@ -86,12 +94,40 @@ function fitFramesOnPage(page) {
     try {
         var textFrames = page.textFrames;
         for (var i = 0; i < textFrames.length; i++) {
-            if (textFrames[i].overflows) {
-                textFrames[i].fit(FitOptions.FRAME_TO_CONTENT);
+            var frame = textFrames[i];
+            if (frame.overflows) {
+                // try using InDesign's default Fit Frame to Content feature
+                frame.fit(FitOptions.FRAME_TO_CONTENT);
+                // if it doesn't work, expand the frame manually
+                if (frame.overflows) {
+                    doFit(frame);
+                }
             }
         }
     } catch (err) { alert(err) }
+}
 
+// recursive function that nudges the frame bounds out by 1
+// until the frame is no longer overset
+function doFit(frame) {
+    if (!frame.overflows) return;
+    expandFrame(frame, 1);
+    doFit(frame);
+}
+
+// expands a given frame by a given unit
+function expandFrame(frame, by) {
+    frame.geometricBounds = transformCoords(frame.geometricBounds, [by * -1, by * -1, by, by]);
+}
+
+// applies transformations in the format [y1, x1, y2, x2]
+function transformCoords(src, trns) {
+    return [
+        src[0] + trns[0],
+        src[1] + trns[1],
+        src[2] + trns[2],
+        src[3] + trns[3]
+    ];
 }
 
 myDisplayDialog();
