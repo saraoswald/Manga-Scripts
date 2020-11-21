@@ -43,7 +43,7 @@ function updateProgressBar(curr) {
 }
 
 function destroyProgressBar() {
-    progressBarWindow.destroy();
+    progressBarWindow.close();
 }
 
 /* ------ Start of Script ------ */
@@ -81,9 +81,9 @@ function myDisplayDialog() {
             }
         } catch (err) { alert(err) }
 
-        myDialog.destroy();
+        myDialog.close();
     } else {
-        myDialog.destroy();
+        myDialog.close();
     }
     app.scriptPreferences.measurementUnit = usersUnits;
 }
@@ -111,7 +111,7 @@ function fitFramesOnPage(page) {
 // until the frame is no longer overset
 function doFit(frame) {
     if (!frame.overflows) return;
-    expandFrame(frame, 1);
+    expandFrame(frame, 5);
     doFit(frame);
 }
 
