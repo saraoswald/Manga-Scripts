@@ -1,7 +1,7 @@
 /* 
     Place Art.js
 
-    Updated: Nov 12 2020
+    Updated: Nov 22 2020, Sara Linsley
     
     ----------------
 
@@ -11,24 +11,58 @@
         - Create a new document with the correct size specifications.
         - Run Place Art.js.
         - Select your art files from the selection menu.
-        - Wait for the art to be placed. You should see images appearing on the pages and links appearing in the Links Panel. If not, you might need to place the art manually.
+        - Select whether to allow this script to detect page numbers from the file names,
+            or to place them sequentially based on a provided starting page
+        - If the binding is set to "Left to Right", select whether or not to place the images "backwards",
+            (e.g. 001.tif would be placed on the last page in the document)
 
     Important Notes: 
         - This is a really intensive operation on your computer. You might need to do it in batches. 
         - This script *will not* place art on locked layers, so protect your other work by locking layers 
         - This was originally intended for manga placement, which is "backwards" compared to other English-language books.
-          Change the "thisIsManga" variable just below here if you'd like to use this for non-manga projects. 
+          Change the "thisIsManga" variable just below here if you'd like to always use this for non-manga projects. 
 */
 
 var thisIsManga = true; // change this to "false" (no quotation marks) if you don't need art to be placed backwards
 
+
+/* ------ Progress Bar Utility Functions ------ */
+
+// define popup at the top level to please the runtime
+var progressBarWindow = new Window("palette", "Placing Art...");
+progressBarWindow.minimumSize = { width: 250, height: 50 }; // this can't be set during initialization despite what the documentation says!!
+var progressBar = progressBarWindow.add('progressbar', undefined, 'Progress');
+
+function progressBarStatusText(curr, maxValue, message) {
+    return curr.toString() + "/" + maxValue.toString() + ' ' + (message || '');
+}
+
+function startProgressBar(maxValue, message) {
+    // get a little progress bar going
+    progressBar.maxvalue = maxValue;
+    progressBar.minimumSize = { width: 200, height: 10 };
+    // the static text's length can't be edited once it's initialized, so try to simulate how long the string will get
+    // (progressBar.minWidth does absolutely nothing)
+    progressBarWindow.add('statictext', undefined, progressBarStatusText(maxValue, maxValue, message));
+    progressBarWindow.show();
+}
+
+function updateProgressBar(curr, message) {
+    // update progress bar values + text
+    progressBar.value = curr;
+    progressBarWindow.children[1].text = progressBarStatusText(curr, progressBar.maxvalue, message);
+    progressBarWindow.update();
+}
+
+function destroyProgressBar() {
+    progressBarWindow.close();
+}
+
+/* ------ Start of Script ------ */
+
 var doc = app.activeDocument;
 var bookSize = doc.pages.count();
 var isLtR = doc.documentPreferences.pageBinding == PageBindingOptions.LEFT_TO_RIGHT;
-
-// define popup at the top level to please the runtime
-var progressBarWindow = new Window("palette", "Placing Art");
-progressBarWindow.minimumSize = { width: 250, height: 50 }; // this can't be set during initialization despite what the documentation says!!
 
 var targetLayer = doc.layers.itemByName('Art').isValid ?
     doc.layers.itemByName('Art') :
@@ -44,42 +78,132 @@ function getFilter() {
 
 try {
     var artFiles = File.openDialog('Select art files to place', getFilter(), true);
-    if (artFiles !== null && artFiles.length > 0) { // in case the user pressed cancel or something
-        var pagesCount = 0; // for debugging :')
-        var hasErrors = false;
-
-
-        // get a little progress bar going
-        var progressBar = progressBarWindow.add('progressbar', undefined, 'Progress', artFiles.length);
-        progressBar.minimumSize = { width: 200, height: 10 };
-        // construct info label for the progress bar's.... progress
-        function getCurrPage(curr, file) {
-            return curr.toString() + "/" + artFiles.length.toString() + " - " + file.name;
+    if (artFiles !== null) {
+        var artFilesToPageNums = [];
+        for (var i = 0; i < artFiles.length; i++) {
+            var file = artFiles[i];
+            artFilesToPageNums.push([file, extractPageNum(file)])
         }
-        // the static text's length can't be edited once it's initialized, so try to simulate how long the string will get
-        // (progressBar.minWidth does absolutely nothing)
-        var progressNumber = progressBarWindow.add('statictext', undefined, getCurrPage(artFiles.length, artFiles[0]));
-        progressBarWindow.show();
-
-        for (var i = 0; !hasErrors && i < artFiles.length; i++) {
-            // actually place the art
-            hasErrors = placeArtOnPage(artFiles[i]);
-            if (!hasErrors) pagesCount++; // keep track of how many images succeeded
-            // update progress bar values + text
-            progressBar.value = i;
-            progressNumber.text = getCurrPage(i + 1, artFiles[i]);
-            progressBarWindow.update();
-        }
-
-        progressBarWindow.close();
-
-        if (!hasErrors && pagesCount === 0) alert("No art files found! Make sure the file names are formatted like 123.TIF");
+        startDialog(artFilesToPageNums);
     }
 } catch (err) { alert(err) }; // the debugger that will never let u down :')
 
+function startDialog(artFilesToPageNums) {
+    w = new Window("dialog", "Place Art");
+    w.alignChildren = "left";
+    var pageRangeControl,
+        startingPageNumber;
 
-function placeArtOnPage(artLink) {
-    var pageNum = extractPageNum(artLink)
+    // ---- First row ----
+
+    w.add('group').add('statictext', [0, 0, 400, 50], "This script can either try to detect what page an image should go on based on its file name, or place them sequentially based on a given starting page.", { multiline: true });
+
+    // ---- Second row ----
+
+    var grp = w.add('group');
+    // Radio buttons
+    var radioGroup = grp.add('panel', undefined, "Place Files Based On:");
+    radioGroup.alignChildren = "left";
+    var useFileNamesRadio = radioGroup.add('radiobutton', undefined, "File Names");
+    var useStartingPageRadio = radioGroup.add('radiobutton', undefined, "Starting Page:");
+    // set default radio selection
+    useFileNamesRadio.value = true;
+
+    // Starting page text input
+    var startingPageInput = radioGroup.add('edittext', undefined, doc.pages.firstItem().name);
+    startingPageInput.alignment = "fill";
+
+    // List of files and their page numbers
+    var fileList = grp.add('listbox', undefined, "", {
+        numberOfColumns: 2,
+        showHeaders: true,
+        columnTitles: ["Image Name", "Page Number"]
+    });
+    fileList.maximumSize = [300, 300];
+    fileList.alignment = "fill";
+
+    function fillFileList(array, pageNumFn) {
+        fileList.removeAll();
+        for (var i = 0; i < array.length; i++) {
+            with(fileList.add("item", array[i][0].name)) {
+                subItems[0].text = pageNumFn ? pageNumFn(i) : (array[i][1] || '??');
+            }
+        }
+    }
+    fillFileList(artFilesToPageNums);
+
+    // ---- LtR checkbox row ----
+
+    // If the binding is Left to Right
+    // Check to see which direction the user wants to place the images
+    var placeBackwardsInput = w.add('group').add('checkbox', undefined, "Place images in the \"backwards\" manga style");
+    placeBackwardsInput.value = thisIsManga;
+    if (!isLtR) placeBackwardsInput.hide();
+
+    // ---- Final (Button) row ----
+
+    // OK and Cancel buttons
+    var buttonsGroup = w.add('group');
+    var okButton = buttonsGroup.add('button', undefined, 'Place Art', { name: 'ok' });
+    buttonsGroup.add('button', undefined, 'Cancel', { name: 'cancel' });
+
+    // ---- Event Handling ----
+
+    function validateStartingPage() {
+        // make sure there are no non-number values
+        // and that the given number is less than or equal to the book's last page
+        return !startingPageInput.text.match(/\D+/g) &&
+            parseInt(startingPageInput.text) <= parseInt(doc.pages.lastItem().name);
+    }
+    useFileNamesRadio.onActivate = function() {
+        fillFileList(artFilesToPageNums);
+        okButton.enabled = true
+    };
+    useStartingPageRadio.onActivate = function() {
+        var isStartingPageValid = validateStartingPage();
+        var startingPage = parseInt(startingPageInput.text);
+        if (isStartingPageValid) fillFileList(artFilesToPageNums, function(i) { return i + startingPage });
+        okButton.enabled = validateStartingPage()
+    };
+    startingPageInput.onChanging = function() {
+        var isStartingPageValid = validateStartingPage();
+        var startingPage = parseInt(startingPageInput.text);
+        if (isStartingPageValid) fillFileList(artFilesToPageNums, function(i) { return i + startingPage });
+        okButton.enabled = useStartingPageRadio.value === true && validateStartingPage()
+    };
+
+    var myReturn = w.show();
+    if (myReturn == true) {
+        try {
+            thisIsManga = placeBackwardsInput.value; // grab the checkbox value and assign it to the global variable
+            var startingPage = useStartingPageRadio.value === true ? startingPageInput.text : null;
+            placeArtOnAllPages(artFiles, startingPage);
+        } catch (err) { alert(err) }
+    }
+}
+
+function placeArtOnAllPages(artFiles, startingPage) {
+    var hasErrors = false,
+        pagesCount = 0; // for debugging :')
+    if (artFiles !== null && artFiles.length > 0) { // in case the user pressed cancel or something
+        startProgressBar(artFiles.length, artFiles[0].name);
+        var pageNum = startingPage; // null if the user wants the number determined from the file name
+        for (var i = 0; !hasErrors && i < artFiles.length; i++) {
+            // actually place the art
+            hasErrors = placeArtOnPage(artFiles[i], pageNum);
+            if (pageNum !== null) pageNum++;
+
+            if (!hasErrors) pagesCount++; // keep track of how many images succeeded
+
+            updateProgressBar(i + 1, artFiles[i].name);
+        }
+        destroyProgressBar();
+    }
+    return hasErrors, pagesCount;
+}
+
+function placeArtOnPage(artLink, pageNum) {
+    if (!pageNum) pageNum = extractPageNum(artLink)
     var hasErrors = pageNum < 1;
     if (!hasErrors) {
         var image = new File(artLink);
