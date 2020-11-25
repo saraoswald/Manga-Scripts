@@ -1,7 +1,7 @@
 /* 
     Place Art.js
 
-    Updated: Nov 22 2020, Sara Linsley
+    Updated: Nov 24 2020, Sara Linsley
     
     ----------------
 
@@ -13,8 +13,11 @@
         - Select your art files from the selection menu.
         - Select whether to allow this script to detect page numbers from the file names,
             or to place them sequentially based on a provided starting page
-        - If the binding is set to "Left to Right", select whether or not to place the images "backwards",
-            (e.g. 001.tif would be placed on the last page in the document)
+        - Select optional changes
+            - Scale all the images as they're placed with "Scale Percentage(%)"
+                - this MUST be a whole number to work (e.g. 119)
+            - If the binding is set to "Left to Right", select whether or not to place the images "backwards",
+                (e.g. 001.tif would be placed on the last page in the document)
 
     Important Notes: 
         - This is a really intensive operation on your computer. You might need to do it in batches. 
@@ -64,6 +67,51 @@ var doc = app.activeDocument;
 var bookSize = doc.pages.count();
 var isLtR = doc.documentPreferences.pageBinding == PageBindingOptions.LEFT_TO_RIGHT;
 
+var anchorPoints = {
+    'Center': AnchorPoint.CENTER_ANCHOR,
+    'Top Center': AnchorPoint.TOP_CENTER_ANCHOR,
+    'Top Left': AnchorPoint.TOP_LEFT_ANCHOR,
+    'Top Right': AnchorPoint.TOP_RIGHT_ANCHOR,
+    'Bottom Center': AnchorPoint.BOTTOM_CENTER_ANCHOR,
+    'Bottom Left': AnchorPoint.BOTTOM_LEFT_ANCHOR,
+    'Bottom Right': AnchorPoint.BOTTOM_RIGHT_ANCHOR,
+    'Left Center': AnchorPoint.LEFT_CENTER_ANCHOR,
+    'Right Center': AnchorPoint.RIGHT_CENTER_ANCHOR,
+}
+
+var anchorPointLabels = [
+    'Center',
+    'Top Center',
+    'Top Left',
+    'Top Right',
+    'Bottom Center',
+    'Bottom Left',
+    'Bottom Right',
+    'Left Center',
+    'Right Center',
+]; // ExtendScript doesn't have Object.keys :')
+
+var anchorPointsValues = [
+    AnchorPoint.CENTER_ANCHOR,
+    AnchorPoint.TOP_CENTER_ANCHOR,
+    AnchorPoint.TOP_LEFT_ANCHOR,
+    AnchorPoint.TOP_RIGHT_ANCHOR,
+    AnchorPoint.BOTTOM_CENTER_ANCHOR,
+    AnchorPoint.BOTTOM_LEFT_ANCHOR,
+    AnchorPoint.BOTTOM_RIGHT_ANCHOR,
+    AnchorPoint.LEFT_CENTER_ANCHOR,
+    AnchorPoint.RIGHT_CENTER_ANCHOR,
+];
+
+function getAppAnchorPoint() {
+    var res = 0;
+    for (var i = 0; i < anchorPointsValues.length; i++) {
+        if (anchorPointsValues[i] === app.activeWindow.transformReferencePoint)
+            res = i;
+    }
+    return res;
+};
+
 var targetLayer = doc.layers.itemByName('Art').isValid ?
     doc.layers.itemByName('Art') :
     doc.layers.add({ name: 'Art' });
@@ -90,9 +138,7 @@ try {
 
 function startDialog(artFilesToPageNums) {
     w = new Window("dialog", "Place Art");
-    w.alignChildren = "left";
-    var pageRangeControl,
-        startingPageNumber;
+    w.alignChildren = "fill";
 
     // ---- First row ----
 
@@ -101,6 +147,7 @@ function startDialog(artFilesToPageNums) {
     // ---- Second row ----
 
     var grp = w.add('group');
+    grp.alignChildren = "left";
     // Radio buttons
     var radioGroup = grp.add('panel', undefined, "Place Files Based On:");
     radioGroup.alignChildren = "left";
@@ -119,7 +166,7 @@ function startDialog(artFilesToPageNums) {
         showHeaders: true,
         columnTitles: ["Image Name", "Page Number"]
     });
-    fileList.maximumSize = [300, 300];
+    fileList.maximumSize = [500, 500];
     fileList.alignment = "fill";
 
     function fillFileList(array, pageNumFn) {
@@ -132,13 +179,33 @@ function startDialog(artFilesToPageNums) {
     }
     fillFileList(artFilesToPageNums);
 
-    // ---- LtR checkbox row ----
+    // ---- Optional Placement Settings ----
 
+    var placementOptionsGroup = w.add('panel', undefined, "Placement Options");
+    placementOptionsGroup.alignChildren = "fill";
+
+    // Scale Percentage
+    // TODO: some validation on this field?
+    var spGrp = placementOptionsGroup.add('group');
+    spGrp.add('statictext', undefined, "Scale Percentage (%):");
+    var scaleFactorInput = spGrp.add('edittext', undefined, '100');
+    scaleFactorInput.characters = 4;
+
+
+    //  Anchor (Reference) Point
+    var apGrp = placementOptionsGroup.add('group');
+    apGrp.add('statictext', undefined, "Reference Point:");
+    var anchorPointDd = apGrp.add('dropdownlist', undefined, anchorPointLabels);
+
+    anchorPointDd.selection = getAppAnchorPoint();
+
+    //LtR checkbox row
     // If the binding is Left to Right
     // Check to see which direction the user wants to place the images
-    var placeBackwardsInput = w.add('group').add('checkbox', undefined, "Place images in the \"backwards\" manga style");
+    var placeBackwardsInput = placementOptionsGroup.add('checkbox', undefined, "Place images in the \"backwards\" manga style");
     placeBackwardsInput.value = thisIsManga;
     if (!isLtR) placeBackwardsInput.hide();
+
 
     // ---- Final (Button) row ----
 
@@ -147,14 +214,20 @@ function startDialog(artFilesToPageNums) {
     var okButton = buttonsGroup.add('button', undefined, 'Place Art', { name: 'ok' });
     buttonsGroup.add('button', undefined, 'Cancel', { name: 'cancel' });
 
-    // ---- Event Handling ----
+    // ---- Validation Functions ----
+    function validateInt(inp) {
+        return !inp.text.match(/\D+/);
+    }
 
     function validateStartingPage() {
         // make sure there are no non-number values
         // and that the given number is less than or equal to the book's last page
-        return !startingPageInput.text.match(/\D+/g) &&
-            parseInt(startingPageInput.text) <= parseInt(doc.pages.lastItem().name);
+        return validateInt(startingPageInput) &&
+            parseInt(startingPageInput) <= parseInt(doc.pages.lastItem().name);
     }
+
+    // ---- Event Handling ----
+
     useFileNamesRadio.onActivate = function() {
         fillFileList(artFilesToPageNums);
         okButton.enabled = true
@@ -177,12 +250,15 @@ function startDialog(artFilesToPageNums) {
         try {
             thisIsManga = placeBackwardsInput.value; // grab the checkbox value and assign it to the global variable
             var startingPage = useStartingPageRadio.value === true ? startingPageInput.text : null;
-            placeArtOnAllPages(artFiles, startingPage);
+            placeArtOnAllPages(artFiles, startingPage, {
+                scaleFactor: validateInt(scaleFactorInput) ? parseInt(scaleFactorInput.text) : 100,
+                anchorPoint: anchorPoints[anchorPointDd.selection]
+            });
         } catch (err) { alert(err) }
     }
 }
 
-function placeArtOnAllPages(artFiles, startingPage) {
+function placeArtOnAllPages(artFiles, startingPage, options) {
     var hasErrors = false,
         pagesCount = 0; // for debugging :')
     if (artFiles !== null && artFiles.length > 0) { // in case the user pressed cancel or something
@@ -190,7 +266,7 @@ function placeArtOnAllPages(artFiles, startingPage) {
         var pageNum = startingPage; // null if the user wants the number determined from the file name
         for (var i = 0; !hasErrors && i < artFiles.length; i++) {
             // actually place the art
-            hasErrors = placeArtOnPage(artFiles[i], pageNum);
+            hasErrors = placeArtOnPage(artFiles[i], pageNum, options);
             if (pageNum !== null) pageNum++;
 
             if (!hasErrors) pagesCount++; // keep track of how many images succeeded
@@ -202,7 +278,7 @@ function placeArtOnAllPages(artFiles, startingPage) {
     return hasErrors, pagesCount;
 }
 
-function placeArtOnPage(artLink, pageNum) {
+function placeArtOnPage(artLink, pageNum, options) {
     if (!pageNum) pageNum = extractPageNum(artLink)
     var hasErrors = pageNum < 1;
     if (!hasErrors) {
@@ -214,7 +290,14 @@ function placeArtOnPage(artLink, pageNum) {
         hasErrors = prePlaceErrorHandling(page, bookPageNum, bookSize, image, artLink);
 
         if (!hasErrors) {
-            placeArtOnPageHelper(page, targetLayer, image);
+            var frameWithArt = placeArtOnPageHelper(page, targetLayer, image);
+            if (frameWithArt) {
+                // if successfully placed art, apply options
+                // just assume there's only one placed grapic per page
+                if (options.scaleFactor && frameWithArt.graphics && frameWithArt.graphics[0].isValid) {
+                    scalePage(frameWithArt.graphics[0], options);
+                }
+            }
         }
     }
     return hasErrors;
@@ -223,6 +306,7 @@ function placeArtOnPage(artLink, pageNum) {
 function placeArtOnPageHelper(page, layer, image) {
     var frame = getFrame(page, layer);
     if (frame) frame.place(image);
+    return frame
 }
 
 function prePlaceErrorHandling(page, pageNum, image, imageLink) {
@@ -298,4 +382,11 @@ function getPageBounds(page) {
         y2 = pb[2] + prfs.documentBleedBottomOffset,
         x2 = pb[3] + bleedRight;
     return [y1, x1, y2, x2];
+}
+
+
+function scalePage(graphic, options) {
+    if (options.scaleFactor === 100) return; // don't waste resources if the scale factor wasn't changed
+    var scaleMatrix = app.transformationMatrices.add({ horizontalScaleFactor: options.scaleFactor / 100, verticalScaleFactor: options.scaleFactor / 100 });
+    graphic.transform(CoordinateSpaces.INNER_COORDINATES, options.anchorPoint, scaleMatrix);
 }
