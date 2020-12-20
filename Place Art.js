@@ -1,7 +1,7 @@
 /* 
     Place Art.js
 
-    Updated: Nov 24 2020, Sara Linsley
+    Updated: Dec 20 2020, Sara Linsley
     
     ----------------
 
@@ -312,10 +312,6 @@ function placeArtOnPageHelper(page, layer, image) {
 function prePlaceErrorHandling(page, pageNum, image, imageLink) {
     var debugInfo = "\n\n----Debug Info Below----\nPage number the script calculated from the link: " + pageNum.toString() + "\nNumber of pages in book: " + bookSize.toString() + "\nImage that messed up: " + imageLink;
 
-    if (pageNum < 0 || pageNum > bookSize) {
-        alert("Not enough pages in this document.\nAdd some more pages, and try again.\nIf that doesn't work, try renaming your files to look like '123.TIF'." + debugInfo);
-        return true;
-    }
     if (!page.isValid || pageNum === 0) {
         alert("Failed to match the number in the file name to one in the book.\nTry renaming your files to look like '123.TIF'." + debugInfo);
         return true;
