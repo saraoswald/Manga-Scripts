@@ -2,6 +2,7 @@
 - [How to use scripts in InDesign](#how-to-use-scripts-in-indesign)
 - [How to write scripts in InDesign](#how-to-write-scripts-in-indesign)
 - [Frequently Asked Questions](#faq)
+- [Scripts De-script-ions](#script-descriptions)
 
 # How to use scripts in InDesign
 
@@ -117,3 +118,46 @@ Yes, you can use parts of these scripts in your own so long as you:
 
 ## Can you write an InDesign script for me?
 Sure! Feel free to shoot me a DM on [Twitter](https://twitter.com/salinsley). 
+
+
+---
+
+# Script Descriptions
+
+## Text Balancing and Design
+### Add Break to
+A common operation when balancing text is to add a line break to the top or bottom. There are 4 scripts that you can assign to keyboard shortcuts to do this quickly:
+- [Add Break to Bottom.js](/Add%20Break%20to%20Bottom.js)
+- [Add Break to Top.js](/Add%20Break%20to%20Top.js)
+- [Add Break to Second to Bottom.js](/Add%20Break%20to%20Second%20to%20Bottom.js)
+- [Add Break to Second to Top.js](/Add%20Break%20to%20Second%20to%20Top.js)
+
+Videos showing these scripts in action can be found [here](https://twitter.com/salinsley/status/1230866286026149889) and [here](https://twitter.com/salinsley/status/1301140858117464065).
+
+Full guide on how to use these scripts to balance text can be found [here](https://github.com/saraoswald/lettering-tutorials/wiki/Text-Placement-and-Balancing#balancing-with-scripts). 
+
+### Manga Em Dash
+[Manga Em Dash.js](/Manga%20Em%20Dash.js) replaces all em dash glyphs with a 200% wide hyphen. This is useful when a font's em dash glyph is the traditional double-dash style, and you're asked to replace them with long hyphens instead.
+
+Creates a new character style with the name "200% Width".
+
+Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1318248888499920897).
+
+### Manual Kerning
+[Manual Kerning.js](Manual%20Kerning.js) is useful when using a font that is designed with poor kerning. You set predefined values in the kerningPairs variable, and the script applies those values when you run it on a text frame. 
+
+Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1259537310938476544).
+
+## Document Setup
+
+## Document Manipulation
+### Go to Page
+[Go to Page.js](/Go%20to%20Page.js) works like the built-in "Go to Page" function, but also works for "backwards" (Left to Right) books. 
+Uses the pageBinding setting in the document to determine which InDesign page to take you to. 
+
+For example, in a 200-page document:
+| Input | Page Binding Setting | Final Page |
+|-------|----------------------|------------|
+|   40  |     Left to Right    |    161     |
+|   40  |     Right to Left    |     40     |
+
