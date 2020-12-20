@@ -12,13 +12,16 @@
 
     Usage Instructions: 
         - Run Position.js with a document open
-        - Specify the scale and shift amounts (in points)
+        - Specify the scale and shift amounts
         - Specify which pages to transform
         - Hit OK
         
     Important Notes: 
         - This is a really intensive operation on your computer. You might need to do it in batches. 
 */
+
+var usersUnits = app.scriptPreferences.measurementUnit; // so we can revert 'em back later
+app.scriptPreferences.measurementUnit = MeasurementUnits.POINTS;
 
 // Feel free to change the default values
 var defaults = {
@@ -40,6 +43,50 @@ var defaults = {
 };
 
 var doc = app.activeDocument;
+var bookSize = Number(doc.pages.lastItem().name); // num of pages in .indd
+var allGraphics = doc.allGraphics;
+
+// Array.indexOf polyfill from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf
+// This version tries to optimize by only checking for "in" when looking for undefined and
+// skipping the definitely fruitless NaN search. Other parts are merely cosmetic conciseness.
+// Whether it is actually faster remains to be seen.
+if (!Array.prototype.indexOf)
+    Array.prototype.indexOf = (function(Object, max, min) {
+        "use strict"
+        return function indexOf(member, fromIndex) {
+            if (this === null || this === undefined)
+                throw TypeError("Array.prototype.indexOf called on null or undefined")
+
+            var that = Object(this),
+                Len = that.length >>> 0,
+                i = min(fromIndex | 0, Len)
+            if (i < 0) i = max(0, Len + i)
+            else if (i >= Len) return -1
+
+            if (member === void 0) { // undefined
+                for (; i !== Len; ++i)
+                    if (that[i] === void 0 && i in that) return i
+            } else if (member !== member) { // NaN
+                return -1 // Since NaN !== NaN, it will never be found. Fast-path it.
+            } else // all else
+                for (; i !== Len; ++i)
+                if (that[i] === member) return i
+
+            return -1 // if the value was not found, then return -1
+        }
+    })(Object, Math.max, Math.min)
+
+main();
+
+function main() {
+    //Make certain that user interaction (display of dialogs, etc.) is turned on.
+    app.scriptPreferences.userInteractionLevel = UserInteractionLevels.interactWithAll;
+    if (allGraphics.length === 0) {
+        alert('Could not find any linked graphics in this document.');
+    } else if (app.documents.length != 0) {
+        myDisplayDialog();
+    }
+};
 
 function myDisplayDialog() {
     myDialog = app.dialogs.add({ name: "Layout Pages" });
@@ -71,7 +118,7 @@ function myDisplayDialog() {
                     for (var i = 0; i < supportedPageRangeTypes.length; i++) {
                         radiobuttonControls.add({ staticLabel: supportedPageRangeTypes[i], checkedState: defaults.pageRange == i, minWidth: 65 });
                     }
-                    pageRangeInput = textEditboxes.add({ editContents: app.activeWindow.activePage.name });
+                    pageRangeInput = textEditboxes.add();
                 }
             }
         }
@@ -95,24 +142,38 @@ function myDisplayDialog() {
     if (myReturn == true) {
         var needsReview = false;
         var selectedPageRange = pageRangeControl.selectedButton;
-        var pageRange = selectedPageRange === 0 ? getValidRange(pageRangeInput.editContents, oddPages.enabledCheckbox.checkedState, evenPages.enabledCheckbox.checkedState) : doc.pages;
+        var pageRange = getValidRange(selectedPageRange === 0 ? pageRangeInput.editContents : '1-' + bookSize);
         var regex = /\d{3,4}(?=\_?\d?\d?[a-zA-Z]?\.[A-Za-z]{3,4})/;
+        var isOdd = function(n) { return oddPages.enabledCheckbox.checkedState && n % 2 > 0 },
+            isEven = function(n) { return evenPages.enabledCheckbox.checkedState && n % 2 == 0 };
 
         if (selectedPageRange === 0 && pageRange.length === 0) {
             alert('Please enter a valid page range (e.g. "12, 32-33")');
             needsReview = true;
         }
 
-        var transformPage = function(page, data) {
+        var extractPageNum = function(graphic) {
+            var path = graphic && graphic.itemLink && graphic.itemLink.filePath || null;
+            var regexResult = regex.exec(path);
+            return path && regexResult !== null && regexResult.length > 0 ?
+                parseInt(regexResult[0], 10) : 0;
+        }
+        var isInRange = function(pageNum) {
+            return pageNum !== NaN &&
+                (isOdd(pageNum) || isEven(pageNum)) &&
+                pageRange.indexOf(pageNum) >= 0;
+        }
+        var transformPage = function(pageNum, pageIndex, data) {
+            if (!isInRange(pageNum)) return;
             if (data.scaleCheckbox.checkedState) {
-                scalePage(page, parseInt(data.scaleFactor.editValue));
+                scalePage(pageIndex, data.scaleFactor.editValue);
             };
-            shiftPage(page, parseInt(data.shiftRight.editValue), parseInt(data.shiftDown.editValue));
+            shiftPage(pageIndex, data.shiftRight.editValue, data.shiftDown.editValue);
         }
 
-        for (var i = 0; i < pageRange.length; i++) {
-            var page = pageRange[i];
-            transformPage(page, parseInt(page.name) % 2 > 0 ? oddPages : evenPages);
+        for (var i = 0; i < allGraphics.length; i++) {
+            var pageNum = extractPageNum(allGraphics[i]);
+            if (pageNum > 0) transformPage(pageNum, i, isOdd(pageNum) ? oddPages : evenPages);
         }
 
         if (!needsReview) {
@@ -123,89 +184,42 @@ function myDisplayDialog() {
     }
 }
 
-// returns sorted array of numbers based on given range string
-// e.g. "11-13, 23" returns [11,12,13,23]
-function getValidRange(inp, includeOdd, includeEven) {
+function getValidRange(inp) {
     var getRange = function(start, stop) {
         var res = []
         for (var i = start; i <= stop; i++) res.push(i); // who needs polyfill when you have for loops amirite
         return res;
     }
 
-    var getCleanRange = function(inp) {
+    var getCleanVal = function(inp) {
         var nums = inp.split('-');
         var x = parseInt(nums[0]),
             y = parseInt(nums[1]) || parseInt(nums[0]);
         return (nums.length > 0 &&
             x && y &&
-            x <= y
+            x <= y &&
+            x <= bookSize && y <= bookSize
         ) ? getRange(x, y) : false;
     }
-
     var arr = inp.replace(/\s/g, '').split(',');
     var resArr = [];
     for (var i = 0; i < arr.length; i++) {
-        var cleanRange = getCleanRange(arr[i]);
-        for (var j = 0; cleanRange && j < cleanRange.length; j++) {
-            var pageNum = cleanRange[j];
-            var pageObj = !!pageNum ? doc.pages.itemByName(pageNum.toString()) : {};
-            if (pageObj.isValid &&
-                (includeOdd && pageNum % 2 > 0) || (includeEven && pageNum % 2 == 0)) { // exclude odd/even values based on checkbox values
-                resArr.push(pageObj);
-            }
+        var cleanVal = getCleanVal(arr[i]);
+        if (cleanVal) {
+            resArr = resArr.concat(cleanVal);
         }
     }
     return resArr.sort();
 }
 
-function scalePage(page, scaleFactor) {
-    if (!page.isValid || scaleFactor === NaN) return;
-
-    var graphics = page.allGraphics;
-    for (var i = 0; i < graphics.length; i++) {
-        var gr = graphics[i];
-        gr.absoluteHorizontalScale = scaleFactor;
-        gr.absoluteVerticalScale = scaleFactor;
-    }
+function scalePage(pageIndex, scaleFactor) {
+    allGraphics[pageIndex].absoluteHorizontalScale = parseInt(scaleFactor);
+    allGraphics[pageIndex].absoluteVerticalScale = parseInt(scaleFactor);
 }
 
-function shiftPage(page, right, down) {
+function shiftPage(pageIndex, right, down) {
     if (right === 0 && down === 0) return;
-
-    for (var i = 0; i < page.allGraphics.length; i++) {
-        var gr = page.allGraphics[i];
-        if (isFramePastMargin(page, gr.parent)) {
-            gr.move(undefined, [right, down]);
-        }
-    }
+    allGraphics[pageIndex].move(undefined, [right, down]);
 }
 
-// returns whether or not a given frame is fully past a page's margins
-// uses the margin as a reference point instead of page bounds or bleed due to floating point issues :/
-function isFramePastMargin(page, frame) {
-    var prfs = page.marginPreferences,
-        pb = page.bounds,
-        fb = frame.geometricBounds;
-    return fb[0] <= pb[0] + prfs.top &&
-        fb[1] <= pb[1] + prfs.left &&
-        fb[2] >= pb[2] - prfs.bottom &&
-        fb[3] >= pb[3] - prfs.right;
-}
-
-
-function main() {
-    var usersUnits = app.scriptPreferences.measurementUnit; // so we can revert 'em back later
-    app.scriptPreferences.measurementUnit = MeasurementUnits.POINTS;
-
-    if (doc.allGraphics.length === 0) {
-        alert('Could not find any linked graphics in this document.');
-    } else if (app.documents.length != 0) {
-        myDisplayDialog();
-    }
-
-    app.scriptPreferences.measurementUnit = usersUnits;
-};
-
-try {
-    main();
-} catch (err) { alert(err) }
+app.scriptPreferences.measurementUnit = usersUnits;
