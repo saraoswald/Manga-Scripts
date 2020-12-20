@@ -1,7 +1,7 @@
 /* 
     Scale Pages.js
 
-    Updated: Dec 17 2020, Sara Linsley
+    Updated: Dec 20 2020, Sara Linsley
     
     ----------------
 
@@ -77,6 +77,9 @@ function myDisplayDialog() {
     }
 }
 
+
+// returns sorted array of numbers based on given range string
+// e.g. "11-13, 23" returns [11,12,13,23]
 function getValidRange(inp) {
     var getRange = function(start, stop) {
         var res = []
@@ -109,45 +112,38 @@ function getValidRange(inp) {
 }
 
 var selectAllOnPage = function() {
-    var selection = filterFrames(app.activeWindow.activePage);
+    var filterFrames = function(pageItem) { return !pageItem.itemLayer.locked && !pageItem.locked };
+    var selection = filter(app.activeWindow.activePage.pageItems, filterFrames);
     app.selection = selection;
+    return selection;
 }
 
-// checks each page item to see if it's a graphic frame that extends to the edges of the page
-// if so, it skips the frame itself and just adds the graphics to the selection
-function filterFrames(page) {
-    var pageItems = page.pageItems;
-    var selectedItems = [];
 
-    function addItem(pageItem) {
-        if (!pageItem.itemLayer.locked && !pageItem.locked) { // don't include items from locked layers
-            selectedItems.push(pageItem);
-        }
-    }
-    for (var i = 0; i < pageItems.length; i++) {
-        var thisItem = pageItems[i];
-        // check if item is a graphic frame that extends to the edges of the page 
-        if (thisItem.allGraphics.length > 0 && isFrameAtPageBounds(page, thisItem.geometricBounds)) {
-            // loop through child graphics, and add them to the selection
-            for (var j = 0; j < thisItem.allGraphics.length; j++) {
-                addItem(thisItem.allGraphics[j]);
-            }
-        } else {
-            addItem(thisItem)
-        }
-    }
-    return selectedItems;
+// returns whether or not a given frame is fully past a page's margins
+// uses the margin as a reference point instead of page bounds or bleed due to floating point issues :/
+function isFramePastMargin(page, frame) {
+    var prfs = page.marginPreferences,
+        pb = page.bounds,
+        fb = frame.geometricBounds;
+    return fb[0] <= pb[0] + prfs.top &&
+        fb[1] <= pb[1] + prfs.left &&
+        fb[2] >= pb[2] - prfs.bottom &&
+        fb[3] >= pb[3] - prfs.right;
 }
 
-function isFrameAtPageBounds(page, frameBounds) {
+// takes bounds input and gives output in the form [y1, x1, y2, x2]
+// adds the document setting for bleed, taking into account the gutter
+function getPageBleed(page) {
     var prfs = doc.documentPreferences,
         pb = page.bounds,
         bleedLeft = page.side == PageSideOptions.RIGHT_HAND ? 0 : prfs.documentBleedOutsideOrRightOffset,
         bleedRight = page.side == PageSideOptions.LEFT_HAND ? 0 : prfs.documentBleedOutsideOrRightOffset;
-    return frameBounds[0] === pb[0] - prfs.documentBleedTopOffset &&
-        frameBounds[1] === pb[1] - bleedLeft &&
-        frameBounds[2] === pb[2] + prfs.documentBleedBottomOffset &&
-        frameBounds[3] === pb[3] + bleedRight;
+    return [
+        pb[0] - prfs.documentBleedTopOffset, //y1
+        pb[1] - bleedLeft, // x1
+        pb[2] + prfs.documentBleedBottomOffset, // y2
+        pb[3] + bleedRight // x2
+    ]
 }
 
 // grab menu actions so we can invoke them later
@@ -174,19 +170,48 @@ function scaleSelected(factor) {
     } else { return }
 }
 
-function scaleDownSelected() {
-    if (doScaleUp.enabled) doScaleUp.invoke();
-}
-
 
 function resizePages(scaleFactor, pageRange) {
     if (scaleFactor === 100) return; // don't waste resources if the scale factor wasn't changed
 
-    for (var p = 0; p < pageRange.length; p++) {
-        app.activeWindow.activePage = pageRange[p];
-        selectAllOnPage();
+    var resizePage = function(page) {
+        // change the active page
+        app.activeWindow.activePage = page;
+
+        // select everything that's not in a locked layer on the page
+        var selected = selectAllOnPage();
+
+        // keep track of frames that are past the margin, so that we can refit them to the bleed later
+        var needsToBeFitted = filter(selected, function(s) { return isFramePastMargin(page, s) });
+
+        // scale everything that's selected by the given scale value
         scaleSelected(scaleFactor);
+
+        // refit anything that was larger than the margin to the bleed
+        // this is intended for base art frames
+        forEach(needsToBeFitted, function(f) { return f.geometricBounds = getPageBleed(page) });
+    }
+
+    forEach(pageRange, resizePage);
+}
+
+// basically Array.filter
+function filter(arr, filterFn) {
+    var res = [];
+    for (var i = 0; i < arr.length; i++) {
+        if (filterFn(arr[i])) {
+            res.push(arr[i])
+        }
+    }
+    return res;
+}
+// basically Array.forEach
+function forEach(arr, fn) {
+    for (var i = 0; i < arr.length; i++) {
+        fn(arr[i]);
     }
 }
 
-myDisplayDialog();
+try {
+    myDisplayDialog();
+} catch (err) { alert(err) }
