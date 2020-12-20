@@ -48,7 +48,7 @@ function myDisplayDialog() {
                 pageRangeControl = radiobuttonGroups.add();
                 with(pageRangeControl) {
                     for (var i = 0; i < supportedPageRangeTypes.length; i++) {
-                        radiobuttonControls.add({ staticLabel: supportedPageRangeTypes[i], checkedState: i == 1, minWidth: 65 });
+                        radiobuttonControls.add({ staticLabel: supportedPageRangeTypes[i], checkedState: i == 0, minWidth: 65 });
                     }
                     pageRangeInput = textEditboxes.add({ editContents: app.activeWindow.activePage.name });
                 }

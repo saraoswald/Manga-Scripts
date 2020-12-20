@@ -1,5 +1,5 @@
 // ----------- Relink All Images ----------- // 
-// Relinks all of the graphics in a document with a specficied graphic saved in the same directory. 
+// Relinks all of the graphics in a document with a specified graphic saved in the same directory. 
 //
 // Example: 
 //  The file linked in your INDD is a PSD. In Photoshop, you convert and flatten the image into a new .tif
