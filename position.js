@@ -1,4 +1,27 @@
-﻿app.scriptPreferences.measurementUnit = MeasurementUnits.POINTS;
+﻿/* 
+    Position.js
+
+    Updated: Dec 20 2020, Sara Linsley
+    
+    ----------------
+
+    Installation instructions here: https://github.com/saraoswald/Manga-Scripts#how-to-use-scripts-in-indesign
+
+    Purpose: 
+        Shifts and scales art that's been placed in an InDesign document
+
+    Usage Instructions: 
+        - Run Position.js with a document open
+        - Specify the scale and shift amounts
+        - Specify which pages to transform
+        - Hit OK
+        
+    Important Notes: 
+        - This is a really intensive operation on your computer. You might need to do it in batches. 
+*/
+
+var usersUnits = app.scriptPreferences.measurementUnit; // so we can revert 'em back later
+app.scriptPreferences.measurementUnit = MeasurementUnits.POINTS;
 
 // Feel free to change the default values
 var defaults = {
@@ -120,7 +143,7 @@ function myDisplayDialog() {
         var needsReview = false;
         var selectedPageRange = pageRangeControl.selectedButton;
         var pageRange = getValidRange(selectedPageRange === 0 ? pageRangeInput.editContents : '1-' + bookSize);
-        var regex = /\d{3}(?=\_?\d?\.[A-Za-z]{3,4})/;
+        var regex = /\d{3,4}(?=\_?\d?\d?[a-zA-Z]?\.[A-Za-z]{3,4})/;
         var isOdd = function(n) { return oddPages.enabledCheckbox.checkedState && n % 2 > 0 },
             isEven = function(n) { return evenPages.enabledCheckbox.checkedState && n % 2 == 0 };
 
@@ -199,4 +222,4 @@ function shiftPage(pageIndex, right, down) {
     allGraphics[pageIndex].move(undefined, [right, down]);
 }
 
-app.scriptPreferences.measurementUnit = AutoEnum.AUTO_VALUE
+app.scriptPreferences.measurementUnit = usersUnits;

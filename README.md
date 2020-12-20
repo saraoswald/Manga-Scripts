@@ -2,7 +2,7 @@
 - [How to use scripts in InDesign](#how-to-use-scripts-in-indesign)
 - [How to write scripts in InDesign](#how-to-write-scripts-in-indesign)
 - [Frequently Asked Questions](#faq)
-- [Scripts De-script-ions](#script-descriptions)
+- [Script De-script-ions](#script-descriptions)
 
 # How to use scripts in InDesign
 
@@ -148,7 +148,55 @@ Video showing this script in action can be found [here](https://twitter.com/sali
 
 Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1259537310938476544).
 
+### Pseudo Stroke
+[Pseudo-Stroke.js](Pseudo-Stroke.js) helps with strokes in InDesign. It is basically the equivalent of doing this: 
+- creating a duplicate text frame and 
+    - converting its text to outlines
+    - adding a stroke to its text
+    - moving it behind the original text frame 
+- putting the duplicate and original text frame in a group
+
+Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1279054362472583168).
+
+### Remove Breaks
+[Remove Breaks.js](Remove%20Breaks.js) works in conjunction with the [Add Break to](#add-break-to) scripts. Removes all the carriage returns in a text frame, for when you want to re-balance a text frame. 
+
+Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1254782259414003712)
+
+### Skew Frame
+[Skew Frame.js](Skew%20Frame.js) increments the Rotation and Shear X Angle of a text frame by the same amount.
+
+Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1246145258586550272)
+
+### Squeeze Frame
+[Squeeze Frame.js](Squeeze%20Frame.js) decreases the horizontal width of a text frame by equal amounts on both sides. Useful while balancing text inside of frames. 
+
+Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1220345987979411470)
+
+More information on how to use scripts to balance text can be found [here](https://github.com/saraoswald/lettering-tutorials/wiki/Text-Placement-and-Balancing#balancing-with-scripts).
+
 ## Document Setup
+### Place Art
+[Place Art.js](Place%20Art.js) places art files on the correct pages in a document. You can either let the script try to guess where the art should be placed, or provide a starting page. 
+
+Please read the usage instructions and notes before running this script, as it can be a very intensive operation on your computer.
+
+Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1330585147952033792).
+
+## Rainbow Layer Colors
+[Rainbow Layer Colors.js](Rainbow%20Layer%20Colors.js) is just a cosmetic change to put a smile on your face. It changes all the layers' colors to be a [rainbow](https://twitter.com/salinsley/status/1229498048126083078). 
+
+## RtL Page Nums
+[RtL Page Nums.js](RtL%20Page%20Nums.js) creates a reference, non-printing layer for when you have to use "backwards" files. 
+
+Longer description and example can be found [here](https://github.com/saraoswald/lettering-tutorials/wiki/Page-Numbers#reference-page-numbers).
+
+
+### Set Binding Right to Left.js
+[Set Binding Right to Left.js](Set%20Binding%20Right%20to%20Left.js) sets the page binding setting of a document to be "Right to Left" instead of the default "Left to Right". This is a setting that can only be set with a script. 
+
+More info on document direction can be found [here](https://github.com/saraoswald/lettering-tutorials/wiki/Page-Numbers#document-order-rtl-or-ltr)
+
 
 ## Document Manipulation
 ### Go to Page
@@ -161,3 +209,34 @@ For example, in a 200-page document:
 |   40  |     Left to Right    |    161     |
 |   40  |     Right to Left    |     40     |
 
+### Refit Overset Frames
+[Refit Overset Frames.js](Refit%20Overset%20Frames.js) refits all of the overflowing frames on either the current page or all pages. InDesign's "Fit Frame to Content" function doesn't work well, so this script nudges all the edges out pixel by pixel until the text is no longer overset. 
+
+Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1329531435066171393).
+
+### Relink Images
+[Relink Image.js](Relink%20Image.js) relinks the base image on the current page to a specified file type. Also works if you add text before the file type (e.g. `{ oldType: '.psd', newType: '_01.tif' },`)
+
+[Relink All Images.js](Relink%20All%20Images.js) does the same thing as Relink Image.js, but to a whole document. 
+
+### Scale Pages
+[Scale Pages.js](Scale%20Pages.js) is useful for resizing pages that have already been lettered. This script allows you to scale all of the art and text at once, for multiple pages. Basically the same thing as selecting everything on a page, and running `Object > Transform > Scale...` on multiple pages. 
+
+It tries to guess which frame is the base art and refits that frame to the bleed after resizing. 
+
+Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1340711061788520448).
+
+### Select All On Page
+[Select All on Page.js](Select%20All%20on%20Page.js) selects everything on the page, but only selects the graphic inside of frames. 
+
+This is useful when resizing a page that's already been lettered, and a guide for that can be found [here](https://github.com/saraoswald/lettering-tutorials/wiki/Placing-and-sizing-art#resizing-a-lettered-page).
+
+### Toggle Layer Lock
+[Toggle Layer Lock.js](Toggle%20Layer%20Lock.js) toggles the lock on layers in the active document whose names are specified in the file name. 
+
+For example, to lock layers with the names "Text" and "Images", you would rename the file to Toggle Layer Lock Text Images.js"
+
+### Position
+[Position.js](Position.js) scales and moves art within its frame, across a whole book. 
+
+More info on how to use this script can be found [here](https://github.com/saraoswald/lettering-tutorials/wiki/Placing-and-sizing-art#sizing-the-art-using-a-script).
