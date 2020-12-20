@@ -237,6 +237,6 @@ This is useful when resizing a page that's already been lettered, and a guide fo
 For example, to lock layers with the names "Text" and "Images", you would rename the file to Toggle Layer Lock Text Images.js"
 
 ### Position
-[Position.js](Position.js) scales and moves art within its frame, across a whole book. 
+[Position.js](position.js) scales and moves art within its frame, across a whole book. 
 
 More info on how to use this script can be found [here](https://github.com/saraoswald/lettering-tutorials/wiki/Placing-and-sizing-art#sizing-the-art-using-a-script).
