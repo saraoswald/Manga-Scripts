@@ -103,6 +103,14 @@ I'm happy to help you figure out what's wrong, but I need the following from you
 4) What operating system are you using (Mac/Windows)?
 5) (Optional) A sample file that you can reproduce the issue in reliably
 
+## I updated to a new version of ID, and now your scripts won't work!
+Sometimes InDesign's migration tool messes up Javascript files. I recommend either: 
+- Downloading the scripts again
+- Manually copying and pasting your old Scripts Panel folder into the new Scripts Panel folder
+    - See [Step 1 of the Installation Guide](#the-fast-and-simple-way) for help finding the Scripts Panel folder
+
+If neither of those fix the issue, see [Why didn't this script work?](#why-didnt-this-script-work).
+
 ## What tools do you use?
 - Adobe CC 2020
 - [Visual Studio Code](https://code.visualstudio.com/)
