@@ -81,7 +81,6 @@ function myDisplayDialog() {
             }
         } catch (err) { alert(err) }
 
-        myDialog.close();
     } else {
         myDialog.close();
     }
