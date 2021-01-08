@@ -1,7 +1,7 @@
 /* 
     Place Art.js
 
-    Updated: Dec 20 2020, Sara Linsley
+    Updated: Jan 8 2021, Sara Linsley
     
     ----------------
 
@@ -223,7 +223,7 @@ function startDialog(artFilesToPageNums) {
         // make sure there are no non-number values
         // and that the given number is less than or equal to the book's last page
         return validateInt(startingPageInput) &&
-            parseInt(startingPageInput) <= parseInt(doc.pages.lastItem().name);
+            parseInt(startingPageInput.text) <= parseInt(doc.pages.lastItem().name);
     }
 
     // ---- Event Handling ----
