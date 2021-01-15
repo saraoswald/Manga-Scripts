@@ -1,6 +1,8 @@
 // ----------- Relink All Images ----------- // 
 // Relinks all of the graphics in a document with a specified graphic saved in the same directory. 
 //
+// Updated: Jan 14 2021
+//
 // Example: 
 //  The file linked in your INDD is a PSD. In Photoshop, you convert and flatten the image into a new .tif
 //  You want to relink the image in the INDD to be the new .tif
@@ -62,7 +64,7 @@ function relink(srcImage) {
         var newPath = oldPath.replace(ref.oldType, ref.newType);
         var newImage = new File(newPath);
 
-        if (oldPath !== newPath && newImage.exists) {
+        if (oldPath.toLowerCase() !== newPath.toLowerCase() && newImage.exists) {
             srcImage.itemLink.relink(newImage);
             isFound = true;
         }
