@@ -1,7 +1,7 @@
 ﻿/* 
     Position.js
 
-    Updated: Dec 20 2020, Sara Linsley
+    Updated: Jan 17 2020, Sara Linsley
     
     ----------------
 
@@ -52,7 +52,7 @@ function myDisplayDialog() {
             oddPages.enabledCheckbox = enablingGroups.add({ staticLabel: "Odd Pages", checkedState: defaults.oddPages.enabled });
             with(oddPages.enabledCheckbox) {
                 with(dialogColumns.add()) {
-                    oddPages.scaleCheckbox = checkboxControls.add({ checkedState: defaults.oddPages.scale, staticLabel: "Scale:" });
+                    oddPages.scaleCheckbox = checkboxControls.add({ checkedState: defaults.oddPages.scale, staticLabel: "Set Image Scale:" });
                     staticTexts.add({ staticLabel: "Shift Right:" });
                     staticTexts.add({ staticLabel: "Shift Down:" });
                 }
@@ -79,7 +79,7 @@ function myDisplayDialog() {
             evenPages.enabledCheckbox = enablingGroups.add({ staticLabel: "Even Pages", checkedState: defaults.evenPages.enabled });
             with(evenPages.enabledCheckbox) {
                 with(dialogColumns.add()) {
-                    evenPages.scaleCheckbox = checkboxControls.add({ checkedState: defaults.oddPages.scale, staticLabel: "Scale:" });
+                    evenPages.scaleCheckbox = checkboxControls.add({ checkedState: defaults.oddPages.scale, staticLabel: "Set Image Scale:" });
                     staticTexts.add({ staticLabel: "Shift Right:" });
                     staticTexts.add({ staticLabel: "Shift Down:" });
                 }
@@ -110,10 +110,12 @@ function myDisplayDialog() {
             shiftPage(page, parseInt(data.shiftRight.editValue), parseInt(data.shiftDown.editValue));
         }
 
-        for (var i = 0; i < pageRange.length; i++) {
-            var page = pageRange[i];
-            transformPage(page, parseInt(page.name) % 2 > 0 ? oddPages : evenPages);
-        }
+        try {
+            for (var i = 0; i < pageRange.length; i++) {
+                var page = pageRange[i];
+                transformPage(page, parseInt(page.name) % 2 > 0 ? oddPages : evenPages);
+            }
+        } catch (err) { alert(err) }
 
         if (!needsReview) {
             myDialog.destroy();
@@ -158,14 +160,17 @@ function getValidRange(inp, includeOdd, includeEven) {
     return resArr.sort();
 }
 
+// resets the horizontal and vertical scale of all the graphics on a page to a given factor
 function scalePage(page, scaleFactor) {
     if (!page.isValid || scaleFactor === NaN) return;
 
     var graphics = page.allGraphics;
     for (var i = 0; i < graphics.length; i++) {
         var gr = graphics[i];
-        gr.absoluteHorizontalScale = scaleFactor;
-        gr.absoluteVerticalScale = scaleFactor;
+        if (isFramePastMargin(page, gr.parent)) {
+            gr.absoluteHorizontalScale = scaleFactor;
+            gr.absoluteVerticalScale = scaleFactor;
+        }
     }
 }
 
@@ -180,16 +185,22 @@ function shiftPage(page, right, down) {
     }
 }
 
-// returns whether or not a given frame is fully past a page's margins
-// uses the margin as a reference point instead of page bounds or bleed due to floating point issues :/
+// returns whether or not a given frame is larger than the page
 function isFramePastMargin(page, frame) {
-    var prfs = page.marginPreferences,
-        pb = page.bounds,
-        fb = frame.geometricBounds;
-    return fb[0] <= pb[0] + prfs.top &&
-        fb[1] <= pb[1] + prfs.left &&
-        fb[2] >= pb[2] - prfs.bottom &&
-        fb[3] >= pb[3] - prfs.right;
+    var pageDims = getBounds(page.bounds),
+        frameDims = getBounds(frame.geometricBounds);
+    return frameDims.height >= pageDims.height &&
+        frameDims.width >= pageDims.width;
+}
+
+// converts an array of coordinates into an object in the format {width, height}
+// makes math easier to understand :')
+function getBounds(bounds) {
+    // bounds = x1, y1, x2, y2
+    return {
+        width: bounds[2] - bounds[0],
+        height: bounds[3] - bounds[1]
+    }
 }
 
 
