@@ -157,7 +157,7 @@ function startDialog(artFilesToPageNums) {
     useFileNamesRadio.value = true;
 
     // Starting page text input
-    var startingPageInput = radioGroup.add('edittext', undefined, doc.pages.firstItem().name);
+    var startingPageInput = radioGroup.add('edittext', undefined, app.activeWindow.activePage.name);
     startingPageInput.alignment = "fill";
 
     // List of files and their page numbers
