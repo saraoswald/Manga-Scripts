@@ -1,7 +1,7 @@
 /* 
     Place Art.js
 
-    Updated: Jan 8 2021, Sara Linsley
+    Updated: May 3 2021, Sara Linsley
     
     ----------------
 
