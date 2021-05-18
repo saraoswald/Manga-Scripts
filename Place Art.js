@@ -156,8 +156,10 @@ function startDialog(artFilesToPageNums) {
     // set default radio selection
     useFileNamesRadio.value = true;
 
+
     // Starting page text input
-    var startingPageInput = radioGroup.add('edittext', undefined, app.activeWindow.activePage.name);
+    var currentPage = (isLtR && !thisIsManga) || !isLtR ? app.activeWindow.activePage.name : '';
+    var startingPageInput = radioGroup.add('edittext', undefined, currentPage);
     startingPageInput.alignment = "fill";
 
     // List of files and their page numbers
