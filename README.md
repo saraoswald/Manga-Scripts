@@ -144,6 +144,15 @@ Videos showing these scripts in action can be found [here](https://twitter.com/s
 
 Full guide on how to use these scripts to balance text can be found [here](https://github.com/saraoswald/lettering-tutorials/wiki/Text-Placement-and-Balancing#balancing-with-scripts). 
 
+### Adjust Size and Leading
+If for whatever reason you can't use [InDesign's auto-leading](https://github.com/saraoswald/lettering-tutorials/wiki/Text-Placement-and-Balancing#sizing-the-fast-way), these scripts will allow you to adjust both the selected text's size and leading at the same time by the same point amount. 
+- [Adjust Size and Leading - Decrease.js](/Adjust%20Size%20and%20Leading%20-%20Decrease.js)
+- [Adjust Size and Leading - Increase.js](/Adjust%20Size%20and%20Leading%20-%20Increase.js)
+
+Set these two scripts to keyboard shortcuts for easy usage. 
+
+*NOTE*: the amount that the script increases/descreases is determined by the leading setting for the active document. Change this setting in `Preferences > Units & Increments > Keyboard Increments > Size/Leading`
+
 ### Manga Em Dash
 [Manga Em Dash.js](/Manga%20Em%20Dash.js) replaces all em dash glyphs with a 200% wide hyphen. This is useful when a font's em dash glyph is the traditional double-dash style, and you're asked to replace them with long hyphens instead.
 
