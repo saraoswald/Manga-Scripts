@@ -1,11 +1,21 @@
-// ----------- Squeeze Frame ----------- // 
-/* Decreases the horizontal width of a text frame by equal amounts on both sides.
- Most Common Use Case:
-    - As I typeset, I want to incrementally adjust the horizontal width of a text
-      frame so that the text reflows into a diamond shape.
+// ----------- Squeeze Frame - Horizonal - In ----------- // 
+/* 
+    DECREASES the horizontal width of a text frame by equal amounts on both sides.
+
+    One part of a series of scripts, meant to be used together: 
+        ->> Squeeze Frame - Horizontal - In.js
+        - Squeeze Frame - Horizontal - Out.js
+        - Squeeze Frame - Vertical - In.js
+        - Squeeze Frame - Vertical - Out.js
+
+    Most Common Use Case:
+        - As I typeset, I want to incrementally adjust the horizontal width of a text
+            frame so that the text reflows into a diamond shape.
+    
+    Updated: October 19 2021, Sara Linsley
 */
 
-var squeezeFactor = 0.25; // change this number to increase/decrease the amount the text frame is squeezed by
+var squeezeFactor = 0.05; // change this number to increase/decrease the amount the text frame is squeezed by
 var doc = app.activeDocument;
 
 function main() {
