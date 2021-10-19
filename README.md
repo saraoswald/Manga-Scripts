@@ -192,7 +192,7 @@ A common operation when balancing text is to adjust the height or width of a tex
 - [Squeeze Frame - Vertical - In.js](/Squeeze%20Frame%20-%20Vertical%20-%20In.js)
 - [Squeeze Frame - Vertical - Out.js](/Squeeze%20Frame%20-%20Vertical%20-%20Out.js)
 
-Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1220345987979411470)
+Video showing these scripts in action can be found [here](https://twitter.com/salinsley/status/1450499680463380485?s=20)
 
 More information on how to use scripts to balance text can be found [here](https://github.com/saraoswald/lettering-tutorials/wiki/Text-Placement-and-Balancing#balancing-with-scripts).
 
