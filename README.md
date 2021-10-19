@@ -196,6 +196,15 @@ Video showing this script in action can be found [here](https://twitter.com/sali
 
 More information on how to use scripts to balance text can be found [here](https://github.com/saraoswald/lettering-tutorials/wiki/Text-Placement-and-Balancing#balancing-with-scripts).
 
+You can change the amount that each script nudges by changing the `squeezeFactor` just below the script's information block, using any text editor like Notepad or TextEdit. The default value is 0.05 points. 
+```
+var squeezeFactor = 0.05; // change this number to increase/decrease the amount the text frame is squeezed by
+```
+If you wanted it to be 0.1, for example, you would change that line to be:
+```
+var squeezeFactor = 0.1; // change this number to increase/decrease the amount the text frame is squeezed by
+```
+
 ## Document Setup
 ### Place Art
 [Place Art.js](Place%20Art.js) places art files on the correct pages in a document. You can either let the script try to guess where the art should be placed, or provide a starting page. 
