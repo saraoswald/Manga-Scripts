@@ -187,10 +187,10 @@ Video showing this script in action can be found [here](https://twitter.com/sali
 
 ### Squeeze Frame
 A common operation when balancing text is to adjust the height or width of a text frame by a small amount. There are 4 scripts that you can assign to keyboard shortcuts to do this quickly:
-- [Squeeze Frame - Horizontal - In.js](/Squeeze Frame - Horizontal - In.js)
-- [Squeeze Frame - Horizontal - Out.js](/Squeeze Frame - Horizontal - Out.js)
-- [Squeeze Frame - Vertical - In.js](/Squeeze Frame - Vertical - In.js)
-- [Squeeze Frame - Vertical - Out.js](/Squeeze Frame - Vertical - Out.js)
+- [Squeeze Frame - Horizontal - In.js](/Squeeze%20Frame%20-%20Horizontal%20-%20In.js)
+- [Squeeze Frame - Horizontal - Out.js](/Squeeze%20Frame%20-%20Horizontal%20-%20Out.js)
+- [Squeeze Frame - Vertical - In.js](/Squeeze%20Frame%20-%20Vertical%20-%20In.js)
+- [Squeeze Frame - Vertical - Out.js](/Squeeze%20Frame%20-%20Vertical%20-%20Out.js)
 
 Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1220345987979411470)
 
