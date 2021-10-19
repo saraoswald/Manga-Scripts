@@ -186,7 +186,11 @@ Video showing this script in action can be found [here](https://twitter.com/sali
 Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1246145258586550272)
 
 ### Squeeze Frame
-[Squeeze Frame.js](Squeeze%20Frame.js) decreases the horizontal width of a text frame by equal amounts on both sides. Useful while balancing text inside of frames. 
+A common operation when balancing text is to adjust the height or width of a text frame by a small amount. There are 4 scripts that you can assign to keyboard shortcuts to do this quickly:
+- [Squeeze Frame - Horizontal - In.js](/Squeeze Frame - Horizontal - In.js)
+- [Squeeze Frame - Horizontal - Out.js](/Squeeze Frame - Horizontal - Out.js)
+- [Squeeze Frame - Vertical - In.js](/Squeeze Frame - Vertical - In.js)
+- [Squeeze Frame - Vertical - Out.js](/Squeeze Frame - Vertical - Out.js)
 
 Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1220345987979411470)
 
