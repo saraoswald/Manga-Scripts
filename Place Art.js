@@ -191,7 +191,7 @@ function startDialog(artFilesToPageNums) {
     var spGrp = placementOptionsGroup.add('group');
     spGrp.add('statictext', undefined, "Scale Percentage (%):");
     var scaleFactorInput = spGrp.add('edittext', undefined, '100');
-    scaleFactorInput.characters = 4;
+    scaleFactorInput.characters = 5;
 
 
     //  Anchor (Reference) Point
@@ -217,14 +217,14 @@ function startDialog(artFilesToPageNums) {
     buttonsGroup.add('button', undefined, 'Cancel', { name: 'cancel' });
 
     // ---- Validation Functions ----
-    function validateInt(inp) {
-        return !inp.text.match(/\D+/);
+    function validateNum(inp) {
+        return !!inp.text.match(/^-{0,1}\d*\.{0,1}\d+$/);
     }
 
     function validateStartingPage() {
         // make sure there are no non-number values
         // and that the given number is less than or equal to the book's last page
-        return validateInt(startingPageInput) &&
+        return validateNum(startingPageInput) &&
             parseInt(startingPageInput.text) <= parseInt(doc.pages.lastItem().name);
     }
 
@@ -253,7 +253,7 @@ function startDialog(artFilesToPageNums) {
             thisIsManga = placeBackwardsInput.value; // grab the checkbox value and assign it to the global variable
             var startingPage = useStartingPageRadio.value === true ? startingPageInput.text : null;
             placeArtOnAllPages(artFiles, startingPage, {
-                scaleFactor: validateInt(scaleFactorInput) ? parseInt(scaleFactorInput.text) : 100,
+                scaleFactor: validateNum(scaleFactorInput) ? parseFloat(scaleFactorInput.text) : 100,
                 anchorPoint: anchorPoints[anchorPointDd.selection]
             });
         } catch (err) { alert(err) }
