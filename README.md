@@ -186,11 +186,24 @@ Video showing this script in action can be found [here](https://twitter.com/sali
 Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1246145258586550272)
 
 ### Squeeze Frame
-[Squeeze Frame.js](Squeeze%20Frame.js) decreases the horizontal width of a text frame by equal amounts on both sides. Useful while balancing text inside of frames. 
+A common operation when balancing text is to adjust the height or width of a text frame by a small amount. There are 4 scripts that you can assign to keyboard shortcuts to do this quickly:
+- [Squeeze Frame - Horizontal - In.js](/Squeeze%20Frame%20-%20Horizontal%20-%20In.js)
+- [Squeeze Frame - Horizontal - Out.js](/Squeeze%20Frame%20-%20Horizontal%20-%20Out.js)
+- [Squeeze Frame - Vertical - In.js](/Squeeze%20Frame%20-%20Vertical%20-%20In.js)
+- [Squeeze Frame - Vertical - Out.js](/Squeeze%20Frame%20-%20Vertical%20-%20Out.js)
 
-Video showing this script in action can be found [here](https://twitter.com/salinsley/status/1220345987979411470)
+Video showing these scripts in action can be found [here](https://twitter.com/salinsley/status/1450499680463380485?s=20)
 
 More information on how to use scripts to balance text can be found [here](https://github.com/saraoswald/lettering-tutorials/wiki/Text-Placement-and-Balancing#balancing-with-scripts).
+
+You can change the amount that each script nudges by changing the `squeezeFactor` just below the script's information block, using any text editor like Notepad or TextEdit. The default value is 0.05 points. 
+```
+var squeezeFactor = 0.05; // change this number to increase/decrease the amount the text frame is squeezed by
+```
+If you wanted it to be 0.1, for example, you would change that line to be:
+```
+var squeezeFactor = 0.1; // change this number to increase/decrease the amount the text frame is squeezed by
+```
 
 ## Document Setup
 ### Place Art
