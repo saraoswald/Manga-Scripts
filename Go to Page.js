@@ -12,6 +12,7 @@
 
     Installation Instructions: https://github.com/saraoswald/Manga-Scripts/#how-to-use-scripts-in-indesign
     
+    Last Updated: August 28, 2022
 */
 
 
@@ -24,7 +25,7 @@ function myDisplayDialog() {
     var bookSize = parseInt(doc.pages.lastItem().name);
     with(myDialog) {
         with(dialogColumns.add()) {
-            var currentPageNum = parseInt(app.activeWindow.activePage.name);
+            var currentPageNum = parseInt(app.activeWindow.activePage.name) || 1;
             var bookPageNum = isLtR ? bookSize - currentPageNum + 1 : currentPageNum;
             selectedPageNumber = integerEditboxes.add({
                 editValue: bookPageNum,
