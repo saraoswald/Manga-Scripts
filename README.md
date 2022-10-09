@@ -91,6 +91,9 @@ To help you get started, here are a couple sample scripts.
 ## Do your scripts only work in CC? 
 I only have access to Adobe CC, so that's the only place I'm able to test them. I have no idea if they'll work on your computer, but I try my best not to use features I know aren't supported before CC. 
 
+## I updated InDesign, and now this script doesn't work. Can you fix it? 
+Creative Cloud will try to migrate scripts over between versions automatically, but it can mess scripts up. Please [re-install](#how-to-use-scripts-in-indesign) affected scripts before [reaching out with some info to help me debug](#why-didnt-this-script-work).
+
 ## Why didn't this script work? 
 **Before reaching out to me, please make sure you have correctly installed the script, and that you've read the instructions at the top of the script file.**
 
