@@ -232,6 +232,11 @@ More info on document direction can be found [here](https://github.com/saraoswal
 
 
 ## Document Manipulation
+### Convert Text to Outlines
+[Convert Text to Outlines.js](/Convert%20Text%20to%20Outlines.js) converts specific text frames in the document to outlines. 
+
+It uses the Find/Replace dialog to determine which text frames should be outlined, so you can get as specific as you need with font styles, paragraph/character styles, etc. 
+
 ### Go to Page
 [Go to Page.js](/Go%20to%20Page.js) works like the built-in "Go to Page" function, but also works for "backwards" (Left to Right) books. 
 Uses the pageBinding setting in the document to determine which InDesign page to take you to. 
