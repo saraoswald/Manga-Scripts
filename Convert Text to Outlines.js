@@ -60,7 +60,7 @@ function main() {
     }
 }
 
-function isError() {
+function isError(findResults) {
     if (findResults.length < 1) {
         return alert("There were no results found with the given search criteria. Please open the Find/Change dialog and adjust the preferences.")
     }
